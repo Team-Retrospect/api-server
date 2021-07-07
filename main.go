@@ -14,7 +14,7 @@ import (
   /* webserver */
   "net/http"
   // "io/ioutil"
-  // "github.com/gorilla/mux"
+  "github.com/gorilla/mux"
 )
 
 func output(contents ...string) {
@@ -165,11 +165,20 @@ func form_handler(w http.ResponseWriter, r *http.Request) {
 //   return m
 // }
 
+func router(w http.ResponseWriter, r *http.Request) {
+}
 
+func root_path() string {
+  return "hello"
+}
 
+func get_all_spans(w http.ResponseWriter, r *http.Request) {}
 
+func get_all_events(w http.ResponseWriter, r *http.Request) {}
 
+func insert_span(w http.ResponseWriter, r *http.Request) {}
 
+func insert_event(w http.ResponseWriter, r *http.Request) {}
 
 /* orchestrate */
 func main() {
@@ -177,10 +186,18 @@ func main() {
 
   // output("Connecting to mongoDB...")
   // db_init(cfg.Mongo.URI)
-  output("(not connecting to DB")
+  output("(not connecting to DB)")
 
-  output("Registering form func...")
-  http.HandleFunc("/tracelog", form_handler)
+  // http.HandleFunc("/tracelog", form_handler)
+
+  output("Declaring router...")
+  r := mux.NewRouter()
+  // r.HandleFunc("/",       root_path)
+  r.HandleFunc("/spans",  get_all_spans   ).Methods("GET")
+  r.HandleFunc("/events", get_all_events  ).Methods("GET")
+  r.HandleFunc("/span",   insert_span     ).Methods("POST")
+  r.HandleFunc("/event",  insert_event    ).Methods("POST")
+  http.Handle("/", r)
 
   // output("Now listening on:", cfg.HTTPPort)
   // if err := http.ListenAndServe(cfg.HTTPPort, nil); err != nil {
