@@ -8,12 +8,16 @@ import (
   /* config */
   "github.com/ilyakaznacheev/cleanenv"
 
-  /*  */
-  // "encoding/json"
+  /* database */
+  "github.com/gocql/gocql"
+  "time"
+  "encoding/json"
+
 
   /* webserver */
   "net/http"
   // "io/ioutil"
+  "io"
   "github.com/gorilla/mux"
 )
 
@@ -30,6 +34,8 @@ type TraceData struct {
 /* load configs from config.yml */
 type ConfigStruct struct {
   Debug         bool    `yaml:"debug"`
+
+  Cluster       string  `yaml:"cluster"`
 
   Port          string  `yaml:"port"`
 
@@ -48,17 +54,17 @@ func load_cfg() {
 
 // zipkin data format
 type SpanStructInput struct {
-  trace_id      string `json:"traceId"`
-  span_id       string `json:"id"`
-  session_id    string `json:"tags.frontendSession"`
-  user_id       string `json:"tags.frontendUser"`
+  Trace_id      string `json:"traceId"`
+  Span_id       string `json:"id"`
 
-  // trigger_route string `json:spanTags["http.method"] + " " + spanTags["http.route"]"`,
-  trigger_route string `json:"http.route"`
+  Time_sent     int64  `json:"timestamp"`
+  Duration      int64  `json:"duration"`
+  Data          map[string]string `json:"tags"`
 
-  time_sent     string `json:"timestamp"`
-  status_code   int16  `json:"tags.http.status_code`
-  span_data     string `json:"updatedSpanTags"`
+  Status_code   string
+  Session_id    string
+  User_id       string
+  Trigger_route string
 }
 
 
@@ -80,6 +86,8 @@ type SpanStructFromDB struct {
 
 
 /* connect to db */
+
+var cluster *gocql.ClusterConfig
 
 func db_init() {}
 
@@ -105,11 +113,29 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
   `[{"id": "1", "session_id": "2", "user_id": "3", "time_sent": "1299038700000", "data": {} }]`)
 }
 
-func insert_span(w http.ResponseWriter, r *http.Request) {
+func insert_spans(w http.ResponseWriter, r *http.Request) {
+  body, _ := io.ReadAll(r.Body)
+
+  var spans []*SpanStructInput
+
+  json.Unmarshal(body, &spans)
+
+  for _, span := range(spans) {
+    span.Status_code = span.Data["http.status_code"]
+    span.Session_id = span.Data["frontendSession"]
+    span.User_id = span.Data["frontendUser"]
+    span.Trigger_route = span.Data["http.method"] + " " + span.Data["http.route"]
+  }
+
+  for _, span := range(spans) {
+    // query here
+    fmt.Println(span.Trace_id)
+  }
+
   w.WriteHeader(http.StatusOK)
 }
 
-func insert_event(w http.ResponseWriter, r *http.Request) {
+func insert_events(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
 }
 
@@ -117,16 +143,31 @@ func insert_event(w http.ResponseWriter, r *http.Request) {
 func main() {
   load_cfg()
 
-  output("(not connecting to DB)")
   /* connect to cassandra here */
+  output("Connecting to Cassandra...")
+  // connect to the cluster
+  cluster = gocql.NewCluster(cfg.Cluster)
+  cluster.Consistency = gocql.Quorum
+  cluster.ProtoVersion = 4
+  cluster.ConnectTimeout = time.Second * 10
+  // cluster.Authenticator = gocql.PasswordAuthenticator{Username: "Username", Password: "Password"} //replace the username and password fields with their real settings.
+  session, err := cluster.CreateSession()
+        if err != nil {
+    log.Println(err)
+    return
+  }
+  defer session.Close()
+
+
+
 
   output("Declaring router...")
   r := mux.NewRouter()
   // r.HandleFunc("/",       root_path)
   r.HandleFunc("/spans",  get_all_spans   ).Methods("GET")
   r.HandleFunc("/events", get_all_events  ).Methods("GET")
-  r.HandleFunc("/span",   insert_span     ).Methods("POST")
-  r.HandleFunc("/event",  insert_event    ).Methods("POST")
+  r.HandleFunc("/spans",  insert_spans    ).Methods("POST")
+  r.HandleFunc("/events", insert_events   ).Methods("POST")
   http.Handle("/", r)
 
   output("Now listening on", cfg.Port)

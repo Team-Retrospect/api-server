@@ -1,5 +1,7 @@
 debug: true
 
+cluster: "cassandra.my.site"
+
 port: ":8080"
 
 use_https: false
