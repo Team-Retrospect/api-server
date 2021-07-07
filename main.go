@@ -29,24 +29,11 @@ type TraceData struct {
 
 /* load configs from config.yml */
 type ConfigStruct struct {
-  Mongo struct {
-    // Port        string `yaml:"port"`
-    // Host        string `yaml:"host"`
-    // User        string `yaml:"dbuser"`
-    // Password    string `yaml:"dbpassword"`
-    // Database    string `yaml:"dbname"`
-    // Extra       string `yaml:"extra"`
-    URI         string  `yaml:"uri"`
-  } `yaml:"mongo"`
-
-  SourceHeader  string  `yaml:"source_header"`
-  Sources     []string  `yaml:"sources"`
-  DefaultSource string  `yaml:"default_source"`
-
   Debug         bool    `yaml:"debug"`
-  HTTPPort      string  `yaml:"http_port"`
-  HTTPSPort     string  `yaml:"https_port"`
 
+  Port          string  `yaml:"port"`
+
+  UseHTTPS      bool    `yaml:"use_https"`
   FullCert      string  `yaml:"fullcert"`
   PrivateKey    string  `yaml:"privatekey"`
 }
@@ -172,23 +159,28 @@ func root_path() string {
   return "hello"
 }
 
-func get_all_spans(w http.ResponseWriter, r *http.Request) {}
+func get_all_spans(w http.ResponseWriter, r *http.Request) {
+  fmt.Fprintf(w, "this is a test");
+}
 
-func get_all_events(w http.ResponseWriter, r *http.Request) {}
+func get_all_events(w http.ResponseWriter, r *http.Request) {
 
-func insert_span(w http.ResponseWriter, r *http.Request) {}
+}
 
-func insert_event(w http.ResponseWriter, r *http.Request) {}
+func insert_span(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func insert_event(w http.ResponseWriter, r *http.Request) {
+
+}
 
 /* orchestrate */
 func main() {
   load_cfg()
 
-  // output("Connecting to mongoDB...")
-  // db_init(cfg.Mongo.URI)
   output("(not connecting to DB)")
-
-  // http.HandleFunc("/tracelog", form_handler)
+  /* connect to cassandra here */
 
   output("Declaring router...")
   r := mux.NewRouter()
@@ -199,12 +191,14 @@ func main() {
   r.HandleFunc("/event",  insert_event    ).Methods("POST")
   http.Handle("/", r)
 
-  // output("Now listening on:", cfg.HTTPPort)
-  // if err := http.ListenAndServe(cfg.HTTPPort, nil); err != nil {
-  //   log.Fatal(err)
-  // }
-  output("Now listening on:", cfg.HTTPSPort)
-  if err := http.ListenAndServeTLS(cfg.HTTPSPort, cfg.FullCert, cfg.PrivateKey, nil); err != nil {
-    log.Fatal(err)
+  output("Now listening on", cfg.Port)
+  if (cfg.UseHTTPS) {
+    if err := http.ListenAndServeTLS(cfg.Port, cfg.FullCert, cfg.PrivateKey, nil); err != nil {
+      log.Fatal(err)
+    }
+  } else {
+    if err := http.ListenAndServe(cfg.Port, nil); err != nil {
+      log.Fatal(err)
+    }
   }
 }
