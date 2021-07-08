@@ -5,7 +5,7 @@ import (
   "fmt"
   "log"
   "strconv"
-  // "strings"
+  "strings"
 
   /* config */
   "github.com/ilyakaznacheev/cleanenv"
@@ -103,15 +103,37 @@ func root_path() string {
 }
 
 func get_all_spans(w http.ResponseWriter, r *http.Request) {
+  query := "SELECT JSON * FROM project.spans;"
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
   w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w,
-  `[{"trace_id": "1", "span_id": "2", "session_id": "3", "user_id": "4", "time_sent": "1299038700000", "trigger_route": "/some/place", "status_code": 200, "data": {} }]`)
+  fmt.Fprintf(w, js)
 }
 
 func get_all_events(w http.ResponseWriter, r *http.Request) {
+  query := "SELECT JSON * FROM project.spans;"
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
   w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w,
-  `[{"id": "1", "session_id": "2", "user_id": "3", "time_sent": "1299038700000", "data": {} }]`)
+  fmt.Fprintf(w, js)
 }
 
 func insert_spans(w http.ResponseWriter, r *http.Request) {
