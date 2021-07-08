@@ -4,6 +4,8 @@ import (
   /* debug */
   "fmt"
   "log"
+  "strconv"
+  // "strings"
 
   /* config */
   "github.com/ilyakaznacheev/cleanenv"
@@ -52,47 +54,46 @@ func load_cfg() {
 
 
 
-// zipkin data format
-type SpanStructInput struct {
-  Trace_id      string `json:"traceId"`
-  Span_id       string `json:"id"`
-
-  Time_sent     int64  `json:"timestamp"`
-  Duration      int64  `json:"duration"`
-  Data          map[string]string `json:"tags"`
-
-  Status_code   string
-  Session_id    string
-  User_id       string
-  Trigger_route string
-}
-
-
-
-type SpanStructFromDB struct {
-  trace_id      string `json:"traceId"`
-  span_id       string `json:"id"`
-  session_id    string `json:"tags.frontendSession"`
-  user_id       string `json:"tags.frontendUser"`
-
-  // trigger_route string `json:spanTags["http.method"] + " " + spanTags["http.route"]"`,
-  trigger_route string `json:"http.route"`
-
-  time_sent     string `json:"timestamp"`
-  status_code   int16  `json:"tags.http.status_code`
-  span_data     string `json:"updatedSpanTags"`
-}
-
-
-
 /* connect to db */
 
 var cluster *gocql.ClusterConfig
+var session *gocql.Session
 
 func db_init() {}
 
 func post_to_db() {}
 
+func get_session() {
+
+}
+
+
+
+// zipkin data format
+type SpanStructInput struct {
+  Trace_id          string        `json:"traceId"`
+  Span_id           string        `json:"id"`
+  Session_id        string        `json:"session_id"`
+  User_id           string        `json:"user_id"`
+  Trigger_route     string        `json:"trigger_route"`
+
+  Time_sent         string        `json:"timestamp"`
+  Duration          int           `json:"duration"`
+  Status_code       string        `json:"status_code"`
+  Data              string        `json:"data"`
+}
+
+type CassandraSpan struct {
+  Trace_id          string        `json:"trace_id"`
+  Span_id           string        `json:"span_id"`
+  Session_id        string        `json:"session_id"`
+  User_id           string        `json:"user_id"`
+  Trigger_route     string        `json:"trigger_route"`
+  Time_sent         string        `json:"time_sent"`
+  Duration          string        `json:"time_duration"`
+  Status_code       int16         `json:"status_code"`
+  Data              string        `json:"data"`
+}
 
 
 /* web server */
@@ -115,24 +116,46 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
 
 func insert_spans(w http.ResponseWriter, r *http.Request) {
   body, _ := io.ReadAll(r.Body)
+  cspans := format_spans(body)
 
-  var spans []*SpanStructInput
+  for _, span := range(cspans) {
+    if span == nil { continue }
+    j, _ := json.Marshal(span)
 
-  json.Unmarshal(body, &spans)
-
-  for _, span := range(spans) {
-    span.Status_code = span.Data["http.status_code"]
-    span.Session_id = span.Data["frontendSession"]
-    span.User_id = span.Data["frontendUser"]
-    span.Trigger_route = span.Data["http.method"] + " " + span.Data["http.route"]
-  }
-
-  for _, span := range(spans) {
-    // query here
-    fmt.Println(span.Trace_id)
+    query := "INSERT INTO project.spans JSON '" + string(j) + "';"
+    session.Query(query).Exec()
   }
 
   w.WriteHeader(http.StatusOK)
+}
+
+func format_spans(blob []byte) []*CassandraSpan {
+  // unmarshal the json blob
+  var jspans []*SpanStructInput
+  json.Unmarshal(blob, &jspans)
+
+  // for i, v := range(jspans) { fmt.Println("jspan", i, v) }
+
+  // convert them into cassandra-compatible structs
+  cspans := make([]*CassandraSpan, len(jspans))
+
+  for _, e := range(jspans) {
+    if e == nil { continue }
+    sc, _ := strconv.ParseInt(e.Status_code, 10, 64)
+    cspans = append(cspans, &CassandraSpan{
+      Trace_id:       e.Trace_id,
+      Span_id:        e.Span_id,
+      Session_id:     e.Session_id,
+      User_id:        e.User_id,
+      Trigger_route:  e.Trigger_route,
+      Time_sent:      e.Time_sent,
+      Duration:       strconv.Itoa(e.Duration) + "us",
+      Status_code:    int16(sc),
+      // Data:           strings.Replace(fmt.Sprintf("%+v", e.Data), "'", "\\'", -1),
+      Data:           e.Data,
+    })
+  }
+  return cspans
 }
 
 func insert_events(w http.ResponseWriter, r *http.Request) {
@@ -151,13 +174,13 @@ func main() {
   cluster.ProtoVersion = 4
   cluster.ConnectTimeout = time.Second * 10
   // cluster.Authenticator = gocql.PasswordAuthenticator{Username: "Username", Password: "Password"} //replace the username and password fields with their real settings.
-  session, err := cluster.CreateSession()
-        if err != nil {
+  s, err := cluster.CreateSession()
+  if err != nil {
     log.Println(err)
     return
   }
+  session = s
   defer session.Close()
-
 
 
 
