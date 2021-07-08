@@ -120,7 +120,7 @@ func get_all_spans(w http.ResponseWriter, r *http.Request) {
 }
 
 func get_all_events(w http.ResponseWriter, r *http.Request) {
-  query := "SELECT JSON * FROM project.spans;"
+  query := "SELECT JSON * FROM project.events;"
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -134,6 +134,7 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
 
   w.Header().Set("Content-Type", "application/json")
   fmt.Fprintf(w, js)
+  output(js)
 }
 
 func insert_spans(w http.ResponseWriter, r *http.Request) {
