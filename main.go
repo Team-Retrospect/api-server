@@ -181,8 +181,8 @@ func format_spans(blob []byte) []*CassandraSpan {
       Duration:       strconv.Itoa(e.Duration) + "us",
       Session_id:     e.Tags["frontendSession"],
       User_id:        e.Tags["frontendUser"],
-      Chapter_id:     e.Tags["frontendSChapter"],
-      Trigger_route:  e.Tags["frontendSession"],
+      Chapter_id:     e.Tags["frontendChapter"],
+      Trigger_route:  e.Tags["triggerRoute"],
       Status_code:    int16(sc),
       Data:           strings.Replace(fmt.Sprint(tags), "'", "\\'", -1),
     })
