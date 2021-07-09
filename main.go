@@ -73,26 +73,30 @@ func get_session() {
 type SpanStructInput struct {
   Trace_id          string        `json:"traceId"`
   Span_id           string        `json:"id"`
-  Session_id        string        `json:"session_id"`
-  User_id           string        `json:"user_id"`
-  Trigger_route     string        `json:"trigger_route"`
-
   Time_sent         string        `json:"timestamp"`
   Duration          int           `json:"duration"`
-  Status_code       string        `json:"status_code"`
-  Data              string        `json:"data"`
+
+  Trigger_route     string        // `json:"trigger_route"`
+  Session_id        string        // `json:"session_id"`
+  User_id           string        // `json:"user_id"`
+  Status_code       string        // `json:"status_code"`
+  Chapter_id        string       // `json:"chapter_id"`
+  Tags              map[string]string        `json:"tags"`
 }
 
 type CassandraSpan struct {
   Trace_id          string        `json:"trace_id"`
   Span_id           string        `json:"span_id"`
-  Session_id        string        `json:"session_id"`
-  User_id           string        `json:"user_id"`
-  Trigger_route     string        `json:"trigger_route"`
   Time_sent         string        `json:"time_sent"`
   Duration          string        `json:"time_duration"`
-  Status_code       int16         `json:"status_code"`
   Data              string        `json:"data"`
+  // Data              map[string]string `json:"data"`
+
+  Trigger_route     string        `json:"trigger_route"`
+  Session_id        string        `json:"session_id"`
+  User_id           string        `json:"user_id"`
+  Chapter_id        string        `json:"chapter_id"`
+  Status_code       int16         `json:"status_code"`
 }
 
 
@@ -134,7 +138,7 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
 
   w.Header().Set("Content-Type", "application/json")
   fmt.Fprintf(w, js)
-  output(js)
+  output("Retrieved events", js)
 }
 
 func insert_spans(w http.ResponseWriter, r *http.Request) {
@@ -164,18 +168,23 @@ func format_spans(blob []byte) []*CassandraSpan {
 
   for _, e := range(jspans) {
     if e == nil { continue }
-    sc, _ := strconv.ParseInt(e.Status_code, 10, 64)
+    sc, _ := strconv.ParseInt(e.Tags["http.statusCode"], 10, 64)
+
+    tags := "{";
+    for k, v := range(e.Tags) { tags += fmt.Sprintf(`"%s": "%s", `, k, v) }
+    tags = tags[0:len(tags)-2] + "}"
+
     cspans = append(cspans, &CassandraSpan{
       Trace_id:       e.Trace_id,
       Span_id:        e.Span_id,
-      Session_id:     e.Session_id,
-      User_id:        e.User_id,
-      Trigger_route:  e.Trigger_route,
       Time_sent:      e.Time_sent,
       Duration:       strconv.Itoa(e.Duration) + "us",
+      Session_id:     e.Tags["frontendSession"],
+      User_id:        e.Tags["frontendUser"],
+      Chapter_id:     e.Tags["frontendSChapter"],
+      Trigger_route:  e.Tags["frontendSession"],
       Status_code:    int16(sc),
-      // Data:           strings.Replace(fmt.Sprintf("%+v", e.Data), "'", "\\'", -1),
-      Data:           e.Data,
+      Data:           strings.Replace(fmt.Sprint(tags), "'", "\\'", -1),
     })
   }
   return cspans
