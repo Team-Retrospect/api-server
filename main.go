@@ -168,7 +168,7 @@ func format_spans(blob []byte) []*CassandraSpan {
 
   for _, e := range(jspans) {
     if e == nil { continue }
-    sc, _ := strconv.ParseInt(e.Tags["http.statusCode"], 10, 64)
+    sc, _ := strconv.ParseInt(e.Tags["http.status_code"], 10, 64)
 
     tags := "{";
     for k, v := range(e.Tags) { tags += fmt.Sprintf(`"%s": "%s", `, k, v) }
