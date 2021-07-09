@@ -97,6 +97,7 @@ type CassandraSpan struct {
   User_id           string        `json:"user_id"`
   Chapter_id        string        `json:"chapter_id"`
   Status_code       int16         `json:"status_code"`
+  Request_data      string        `json:"request_data"`
 }
 
 
@@ -169,6 +170,8 @@ func format_spans(blob []byte) []*CassandraSpan {
   for _, e := range(jspans) {
     if e == nil { continue }
     sc, _ := strconv.ParseInt(e.Tags["http.status_code"], 10, 64)
+    rd := e.Tags["requestData"]
+    delete(e.Tags, "requestData")
 
     tags := "{";
     for k, v := range(e.Tags) { tags += fmt.Sprintf(`"%s": "%s", `, k, v) }
@@ -183,6 +186,7 @@ func format_spans(blob []byte) []*CassandraSpan {
       User_id:        e.Tags["frontendUser"],
       Chapter_id:     e.Tags["frontendChapter"],
       Trigger_route:  e.Tags["triggerRoute"],
+      Request_data:   rd,
       Status_code:    int16(sc),
       Data:           strings.Replace(fmt.Sprint(tags), "'", "\\'", -1),
     })
