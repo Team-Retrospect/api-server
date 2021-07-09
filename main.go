@@ -59,13 +59,6 @@ func load_cfg() {
 var cluster *gocql.ClusterConfig
 var session *gocql.Session
 
-func db_init() {}
-
-func post_to_db() {}
-
-func get_session() {
-
-}
 
 
 
@@ -93,11 +86,32 @@ type CassandraSpan struct {
   // Data              map[string]string `json:"data"`
 
   Trigger_route     string        `json:"trigger_route"`
-  Session_id        string        `json:"session_id"`
   User_id           string        `json:"user_id"`
+  Session_id        string        `json:"session_id"`
   Chapter_id        string        `json:"chapter_id"`
   Status_code       int16         `json:"status_code"`
   Request_data      string        `json:"request_data"`
+}
+
+type EventStructInput struct {
+  // body data only
+  // Type              string        `json:"type"`
+  // Data              string        `json:"data"`
+  // Event_time        string        `json:"timestamp"`
+}
+
+type CassandraEvent struct {
+  // header data
+  User_id           string        `json:"user_id"`
+  Session_id        string        `json:"session_id"`
+  Chapter_id        string        `json:"chapter_id"`
+
+  // body data
+  // Type              string        `json:"type"`
+  // Data              string        `json:"data"`
+  // Time_sent         string        `json:"time_sent"`
+  // Test string `json:"test"`
+  Body  string `json:"data"`
 }
 
 
@@ -161,6 +175,7 @@ func format_spans(blob []byte) []*CassandraSpan {
   // unmarshal the json blob
   var jspans []*SpanStructInput
   json.Unmarshal(blob, &jspans)
+  fmt.Println(jspans)
 
   // for i, v := range(jspans) { fmt.Println("jspan", i, v) }
 
@@ -194,9 +209,61 @@ func format_spans(blob []byte) []*CassandraSpan {
   return cspans
 }
 
+
+
 func insert_events(w http.ResponseWriter, r *http.Request) {
+  body, _ := io.ReadAll(r.Body)
+  cevents := format_events(body, r)
+
+  for _, event := range(cevents) {
+    if event == nil { continue }
+    j, _ := json.Marshal(event)
+
+    query := "INSERT INTO project.events JSON '" + string(j) + "';"
+    session.Query(query).Exec()
+    // fmt.Println(query)
+  }
+
   w.WriteHeader(http.StatusOK)
 }
+
+// todo
+func format_events(blob []byte, r *http.Request) []*CassandraEvent {
+  // unmarshal the json blob
+  // var jevents []*EventStructInput
+  // json.Unmarshal(blob, &jevents)
+  // fmt.Println("blob", string(blob))
+  // fmt.Println("jevents", jevents)
+  // fmt.Println("len jevents", len(jevents))
+
+  // convert them into cassandra-compatible structs
+  // cevents := make([]*CassandraEvent, len(jevents))
+  cevents := make([]*CassandraEvent, 1)
+
+  // for i, e := range(jevents) {
+    // fmt.Println(i, e)
+    // if e == nil { continue }
+
+    // tags := "{";
+    // for k, v := range(e.Tags) { tags += fmt.Sprintf(`"%s": "%s", `, k, v) }
+    // tags = tags[0:len(tags)-2] + "}"
+
+    cevents = append(cevents, &CassandraEvent{
+      User_id:            r.Header.Get("user-id"),
+      Session_id:         r.Header.Get("session-id"),
+      Chapter_id:         r.Header.Get("chapter-id"),
+
+      // Type:               e.Type,
+      // Data:               e.Data,
+      // Time_sent:          e.Event_time,
+      // Test: e.Test,
+      Body: string(blob),
+    })
+  // }
+  return cevents
+}
+
+
 
 /* orchestrate */
 func main() {
