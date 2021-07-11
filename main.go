@@ -122,6 +122,8 @@ func root_path() string {
 }
 
 func get_all_spans(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
   query := "SELECT JSON * FROM project.spans;"
   scanner := session.Query(query).Iter().Scanner()
 
@@ -139,6 +141,8 @@ func get_all_spans(w http.ResponseWriter, r *http.Request) {
 }
 
 func get_all_events(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
   query := "SELECT JSON * FROM project.events;"
   scanner := session.Query(query).Iter().Scanner()
 
@@ -157,6 +161,8 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
 }
 
 func insert_spans(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
   body, _ := io.ReadAll(r.Body)
   cspans := format_spans(body)
 
@@ -212,6 +218,8 @@ func format_spans(blob []byte) []*CassandraSpan {
 
 
 func insert_events(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
   body, _ := io.ReadAll(r.Body)
   cevents := format_events(body, r)
 
@@ -261,6 +269,14 @@ func format_events(blob []byte, r *http.Request) []*CassandraEvent {
     })
   // }
   return cevents
+}
+
+func enableCors(w *http.ResponseWriter) {
+  allowedHeaders := "*" // "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization,X-CSRF-Token, Tracer-Source"
+  (*w).Header().Set("Access-Control-Allow-Origin", "*")
+  (*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+  (*w).Header().Set("Access-Control-Allow-Headers", allowedHeaders)
+  (*w).Header().Set("Access-Control-Expose-Headers", "Authorization")
 }
 
 
