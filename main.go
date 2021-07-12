@@ -117,10 +117,6 @@ type CassandraEvent struct {
 
 /* web server */
 
-func root_path() string {
-  return "hello"
-}
-
 func get_all_spans(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
@@ -181,9 +177,6 @@ func format_spans(blob []byte) []*CassandraSpan {
   // unmarshal the json blob
   var jspans []*SpanStructInput
   json.Unmarshal(blob, &jspans)
-  fmt.Println(jspans)
-
-  // for i, v := range(jspans) { fmt.Println("jspan", i, v) }
 
   // convert them into cassandra-compatible structs
   cspans := make([]*CassandraSpan, len(jspans))
@@ -229,32 +222,14 @@ func insert_events(w http.ResponseWriter, r *http.Request) {
 
     query := "INSERT INTO project.events JSON '" + string(j) + "';"
     session.Query(query).Exec()
-    // fmt.Println(query)
   }
 
   w.WriteHeader(http.StatusOK)
 }
 
-// todo
 func format_events(blob []byte, r *http.Request) []*CassandraEvent {
-  // unmarshal the json blob
-  // var jevents []*EventStructInput
-  // json.Unmarshal(blob, &jevents)
-  // fmt.Println("blob", string(blob))
-  // fmt.Println("jevents", jevents)
-  // fmt.Println("len jevents", len(jevents))
-
-  // convert them into cassandra-compatible structs
-  // cevents := make([]*CassandraEvent, len(jevents))
+  // convert them into cassandra-compatible structs\
   cevents := make([]*CassandraEvent, 1)
-
-  // for i, e := range(jevents) {
-    // fmt.Println(i, e)
-    // if e == nil { continue }
-
-    // tags := "{";
-    // for k, v := range(e.Tags) { tags += fmt.Sprintf(`"%s": "%s", `, k, v) }
-    // tags = tags[0:len(tags)-2] + "}"
 
     cevents = append(cevents, &CassandraEvent{
       User_id:            r.Header.Get("user-id"),
@@ -264,7 +239,6 @@ func format_events(blob []byte, r *http.Request) []*CassandraEvent {
       // Type:               e.Type,
       // Data:               e.Data,
       // Time_sent:          e.Event_time,
-      // Test: e.Test,
       Body: string(blob),
     })
   // }
