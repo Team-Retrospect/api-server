@@ -255,7 +255,6 @@ func format_events(blob []byte, r *http.Request) []*CassandraEvent {
     // tags := "{";
     // for k, v := range(e.Tags) { tags += fmt.Sprintf(`"%s": "%s", `, k, v) }
     // tags = tags[0:len(tags)-2] + "}"
-    fmt.Println(r.Header)
 
     cevents = append(cevents, &CassandraEvent{
       User_id:            r.Header.Get("user-id"),
