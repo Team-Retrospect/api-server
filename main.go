@@ -305,11 +305,10 @@ func main() {
 
   output("Declaring router...")
   r := mux.NewRouter()
-  // r.HandleFunc("/",       root_path)
-  r.HandleFunc("/spans",  get_all_spans   ).Methods("GET")
-  r.HandleFunc("/events", get_all_events  ).Methods("GET")
-  r.HandleFunc("/spans",  insert_spans    ).Methods("POST")
-  r.HandleFunc("/events", insert_events   ).Methods("POST")
+  r.Path("/spans").Methods(http.MethodGet).HandlerFunc(get_all_spans)
+  r.Path("/events").Methods(http.MethodGet).HandlerFunc(get_all_events)
+  r.Path("/spans").Methods(http.MethodPost).HandlerFunc(insert_spans)
+  r.Path("/events").Methods(http.MethodPost).HandlerFunc(insert_events)
   http.Handle("/", r)
 
   output("Now listening on", cfg.Port)
