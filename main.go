@@ -273,7 +273,7 @@ func format_events(blob []byte, r *http.Request) []*CassandraEvent {
 }
 
 func enableCors(w *http.ResponseWriter) {
-  allowedHeaders := "*" // "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization,X-CSRF-Token, Tracer-Source"
+  allowedHeaders := "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-Token, Tracer-Source, User-Id, Session-Id, Chapter-Id"
   (*w).Header().Set("Access-Control-Allow-Origin", "*")
   (*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
   (*w).Header().Set("Access-Control-Allow-Headers", allowedHeaders)
@@ -306,10 +306,10 @@ func main() {
 
   output("Declaring router...")
   r := mux.NewRouter()
-  r.Path("/spans").Methods(http.MethodGet).HandlerFunc(get_all_spans)
-  r.Path("/events").Methods(http.MethodGet).HandlerFunc(get_all_events)
-  r.Path("/spans").Methods(http.MethodPost).HandlerFunc(insert_spans)
-  r.Path("/events").Methods(http.MethodPost).HandlerFunc(insert_events)
+  r.Path("/spans").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans)
+  r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
+  r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
+  r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   http.Handle("/", r)
 
   output("Now listening on", cfg.Port)
