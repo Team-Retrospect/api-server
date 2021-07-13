@@ -553,7 +553,7 @@ func main() {
   r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
-  r.Path("/spanSearch").Queries("trace_id", "{trace_id:[a-zA-Z0-9_]*?}", "user_id", "{user_id:[a-zA-Z0-9_]*?}", "session_id", "{session_id:[a-zA-Z0-9_]*?}", "chapter_id", "{chapter_id:[a-zA-Z0-9_]*?}", "status_code", "{status_code:[0-9]*?}").HandlerFunc(span_search_handler)
+  r.Path("/spanSearch").Queries("trace_id", "{trace_id:[\\w\\-]*?}", "user_id", "{user_id:[\\w\\-]*?}", "session_id", "{session_id:[\\w\\-]*?}", "chapter_id", "{chapter_id:[\\w\\-]*?}", "status_code", "{status_code:[0-9]*?}").HandlerFunc(span_search_handler)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
