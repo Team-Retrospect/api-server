@@ -377,6 +377,7 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// r.Path("/spanSearch").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
@@ -386,6 +387,7 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   fmt.Println("status_code", status_code)
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s' AND status_code='%s';", trace_id, status_code);
+  fmt.Println("query", query)
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
