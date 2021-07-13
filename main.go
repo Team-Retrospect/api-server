@@ -377,6 +377,30 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+func span_search_handler(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  trace_id, _ := r.FormValue("trace_id")
+  status_code, _ := r.FormValue("status_code")
+  fmt.Println("trace_id", trace_id)
+  fmt.Println("status_code", status_code)
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s' AND status_code='%s';", trace_id, status_code);
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
 func format_spans(blob []byte) []*CassandraSpan {
   // unmarshal the json blob
   
@@ -498,6 +522,7 @@ func main() {
   r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
+  r.Path("/spanSearch").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
