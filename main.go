@@ -544,6 +544,8 @@ func main() {
   session = s
   defer session.Close()
 
+  // "user_id", "{[a-zA-Z0-9_]*?}", "session_id", "{[a-zA-Z0-9_]*?}", "chapter_id", "{[a-zA-Z0-9_]*?}", 
+  
   output("Declaring router...")
   r := mux.NewRouter()
   r.Path("/spans").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans)
@@ -551,7 +553,7 @@ func main() {
   r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
-  r.Path("/spanSearch").Queries("trace_id", "{[a-zA-Z0-9_]*?}", "user_id", "{[a-zA-Z0-9_]*?}", "session_id", "{[a-zA-Z0-9_]*?}", "chapter_id", "{[a-zA-Z0-9_]*?}", "status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
+  r.Path("/spanSearch").Queries("trace_id", "{[a-zA-Z0-9_]*?}", "status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
