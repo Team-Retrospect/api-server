@@ -1,26 +1,36 @@
 package main
 
 import (
-  /* debug */
-  "fmt"
-  "log"
-  "strconv"
-  "strings"
+	/* debug */
+	"fmt"
+	"log"
+	"strconv"
+	"strings"
 
-  /* config */
-  "github.com/ilyakaznacheev/cleanenv"
+	/* config */
+	// "Clean and minimalistic environment configuration reader for Golang"
+	// "reads and parses configuration structure from the file
+	// reads and overwrites configuration structure from environment variables
+	// writes a detailed variable list to help output"
+	//   ReadConfig method takes a string representing the name of a config file
+	//    and a pointer to a struct (ex. ConfigStruct)
 
-  /* database */
-  "github.com/gocql/gocql"
-  "time"
-  "encoding/json"
+	// may have to use this when dockerizing
+	"github.com/ilyakaznacheev/cleanenv"
 
+	/* database */
+	"encoding/json"
+	"time"
 
-  /* webserver */
-  "net/http"
-  // "io/ioutil"
-  "io"
-  "github.com/gorilla/mux"
+	// gocql implements a fast and robust Cassandra client for the Go programming language
+	"github.com/gocql/gocql"
+
+	/* webserver */
+	"net/http"
+	// "io/ioutil"
+	"io"
+
+	"github.com/gorilla/mux"
 )
 
 func output(contents ...string) {
@@ -34,39 +44,64 @@ type TraceData struct {
 }
 
 /* load configs from config.yml */
+// property names match the data in the config.yml
+
+
+// may have to add database credentials to this struct
+// when we dockerize the application
+// (read from environment variables? err := cleanenv.ReadEnv(&cfg))
+//     Password string `env:"PASSWORD"`
+
+
 type ConfigStruct struct {
+// debug: false
   Debug         bool    `yaml:"debug"`
 
+// cluster: "cassandra.xadi.io"
   Cluster       string  `yaml:"cluster"`
 
+// port: ":443"
   Port          string  `yaml:"port"`
 
+// use_https: true
   UseHTTPS      bool    `yaml:"use_https"`
+// fullcert: "/etc/letsencrypt/live/api.xadi.io/fullchain.pem"
   FullCert      string  `yaml:"fullcert"`
+// privatekey: "/etc/letsencrypt/live/api.xadi.io/privkey.pem"
   PrivateKey    string  `yaml:"privatekey"`
 }
+
 var debug bool = false;
 var cfg ConfigStruct
+// taking the information from the .yml file and putting it into a Struct
 func load_cfg() {
   cleanenv.ReadConfig("config.yml", &cfg)
   debug = cfg.Debug
 }
 
-
-
 /* connect to db */
 
+// initializing a variable of type gocql.ClusterConfig
+// we will eventually set it equal to gocql.NewCluster(cfg.Cluster)
+// Q for Nicole: Why are these initialized outlide of main function?
 var cluster *gocql.ClusterConfig
+
+// initialize a variable of type gocql.Session
+// will eventually be set equal to cluster.CreateSession()
+// (see above to see what cluster is equal to)
 var session *gocql.Session
 
-
+// the cluster holds nodes (like layers) which hold tables
+// a cluster holds nodes which would be like, two different localhosts
+// (in this case we only have one)
+// the nodes hold keyspaces (like a table)
 
 
 // zipkin data format
 type SpanStructInput struct {
   Trace_id          string        `json:"traceId"`
   Span_id           string        `json:"id"`
-  Time_sent         string        `json:"timestamp"`
+  Time_sent         int           `json:"timestamp"`
   Duration          int           `json:"duration"`
 
   Trigger_route     string        // `json:"trigger_route"`
@@ -80,7 +115,7 @@ type SpanStructInput struct {
 type CassandraSpan struct {
   Trace_id          string        `json:"trace_id"`
   Span_id           string        `json:"span_id"`
-  Time_sent         string        `json:"time_sent"`
+  Time_sent         int           `json:"time_sent"`
   Duration          string        `json:"time_duration"`
   Data              string        `json:"data"`
   // Data              map[string]string `json:"data"`
@@ -161,15 +196,23 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
 }
 
 func insert_spans(w http.ResponseWriter, r *http.Request) {
+  output("Inserting a Span")
   if (cfg.UseHTTPS) { enableCors(&w) }
 
+  // r.Body is type *http.bodyblob
+  // io.ReadAll returns an array of bytes
   body, _ := io.ReadAll(r.Body)
+
+  // format_spans takes an array of bytes
+  // and returns an array of CassandraSpan objects
   cspans := format_spans(body)
 
   for _, span := range(cspans) {
     if span == nil { continue }
+    // json.Marshal returns the json encoding of the variable passed into it
     j, _ := json.Marshal(span)
 
+    // each json-ified span is stringified and inserted into the database as a json object
     query := "INSERT INTO project.spans JSON '" + string(j) + "';"
     session.Query(query).Exec()
   }
@@ -177,11 +220,59 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
 }
 
+func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  query := "SELECT JSON trigger_route FROM project.spans;"
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
+func get_all_trace_ids_with_trigger_route(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  vars := mux.Vars(r);
+  trigger_route, ok := vars["trigger_route"]
+
+  if !ok {
+    fmt.Println("trigger_route is missing in parameters")
+  }
+
+  fmt.Println(`trigger_route=`, trigger_route)
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trigger_route=%s;", trigger_route);
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
 func format_spans(blob []byte) []*CassandraSpan {
   // unmarshal the json blob
+  
+  // initializing an array of SpanStructInput objects
   var jspans []*SpanStructInput
   json.Unmarshal(blob, &jspans)
-  fmt.Println(jspans)
 
   // for i, v := range(jspans) { fmt.Println("jspan", i, v) }
 
@@ -209,6 +300,9 @@ func format_spans(blob []byte) []*CassandraSpan {
       Trigger_route:  e.Tags["triggerRoute"],
       Request_data:   rd,
       Status_code:    int16(sc),
+      // note for nicole: what is the point of the string replacement?
+      // We can't see any single quotes in the tags, nor any double
+      // slashes in the resulting Data
       Data:           strings.Replace(fmt.Sprint(tags), "'", "\\'", -1),
     })
   }
@@ -310,16 +404,18 @@ func main() {
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
+  r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
+  r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_with_trigger_route)
   http.Handle("/", r)
 
   output("Now listening on", cfg.Port)
-  if (cfg.UseHTTPS) {
-    if err := http.ListenAndServeTLS(cfg.Port, cfg.FullCert, cfg.PrivateKey, nil); err != nil {
-      log.Fatal(err)
-    }
-  } else {
+  // if (cfg.UseHTTPS) {
+  //   if err := http.ListenAndServeTLS(cfg.Port, cfg.FullCert, cfg.PrivateKey, nil); err != nil {
+  //     log.Fatal(err)
+  //   }
+  // } else {
     if err := http.ListenAndServe(cfg.Port, nil); err != nil {
       log.Fatal(err)
     }
-  }
+  // }
 }
