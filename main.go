@@ -186,7 +186,7 @@ func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
     fmt.Println("trace_id is missing in parameters")
   }
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s' ALLOW FILTERING;", trace_id);
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s';", trace_id);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -213,7 +213,7 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
     fmt.Println("chapter_id is missing in parameters")
   }
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE chapter_id='%s' ALLOW FILTERING;", chapter_id);
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE chapter_id='%s';", chapter_id);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -260,7 +260,7 @@ func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
     fmt.Println("chapter_id is missing in parameters")
   }
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.events WHERE chapter_id='%s' ALLOW FILTERING;", chapter_id);
+  query := fmt.Sprintf("SELECT JSON * FROM project.events WHERE chapter_id='%s';", chapter_id);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -321,6 +321,7 @@ func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
 }
 
 // r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger_route)
+// might be better to just do the filtering on the client side
 func get_all_trace_ids_by_trigger_route(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
@@ -364,7 +365,7 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
 
   fmt.Println(`session id=`, session_id)
 
-  query := fmt.Sprintf("SELECT JSON chapter_id FROM project.spans WHERE session_id='%s' ALLOW FILTERING;", session_id);
+  query := fmt.Sprintf("SELECT JSON chapter_id FROM project.spans WHERE session_id='%s';", session_id);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
