@@ -383,11 +383,11 @@ func format_spans(blob []byte) []*CassandraSpan {
   // initializing an array of SpanStructInput objects
   var jspans []*SpanStructInput
   json.Unmarshal(blob, &jspans)
-<<<<<<< HEAD
-=======
+// <<<<<<< HEAD
+// =======
 
   // for i, v := range(jspans) { fmt.Println("jspan", i, v) }
->>>>>>> c1e2d39cbce5f6571cfe5df0b3c6cd19188e8046
+// >>>>>>> c1e2d39cbce5f6571cfe5df0b3c6cd19188e8046
 
   // convert them into cassandra-compatible structs
   cspans := make([]*CassandraSpan, len(jspans))
