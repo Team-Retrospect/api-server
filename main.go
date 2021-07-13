@@ -393,6 +393,13 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   var dynamicQuery []string
 
   for _, p := range acceptedParams {
+    if p != "status_code" {
+      val := r.FormValue(p)
+      if val != "" {
+        dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v=%s", p, val))
+      }
+      continue
+    }
     val := r.FormValue(p)
     if val != "" {
       dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v=%v", p, val))
@@ -401,6 +408,10 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
 
   dynamicQueryString := strings.Join(dynamicQuery," AND ")
   fmt.Println(dynamicQueryString)
+
+  if len(dynamicQueryString) != 0 {
+    dynamicQueryString = "WHERE " + dynamicQueryString
+  }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans " + dynamicQueryString + ";")
   fmt.Println("query", query)
