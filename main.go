@@ -300,7 +300,7 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
 func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
-  query := "SELECT JSON trigger_route FROM project.spans;"
+  query := "SELECT JSON trigger_route, data FROM project.spans;"
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
