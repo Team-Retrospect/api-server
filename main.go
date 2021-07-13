@@ -506,13 +506,13 @@ func main() {
   http.Handle("/", r)
 
   output("Now listening on", cfg.Port)
-  // if (cfg.UseHTTPS) {
-  //   if err := http.ListenAndServeTLS(cfg.Port, cfg.FullCert, cfg.PrivateKey, nil); err != nil {
-  //     log.Fatal(err)
-  //   }
-  // } else {
+  if (cfg.UseHTTPS) {
+    if err := http.ListenAndServeTLS(cfg.Port, cfg.FullCert, cfg.PrivateKey, nil); err != nil {
+      log.Fatal(err)
+    }
+  } else {
     if err := http.ListenAndServe(cfg.Port, nil); err != nil {
       log.Fatal(err)
     }
-  // }
+  }
 }
