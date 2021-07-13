@@ -175,6 +175,32 @@ func get_all_spans(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  vars := mux.Vars(r);
+  trace_id, ok := vars["id"]
+
+  if !ok {
+    fmt.Println("trace_id is missing in parameters")
+  }
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s' ALLOW FILTERING;", trace_id);
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
 func get_all_events(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
@@ -239,6 +265,7 @@ func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_with_trigger_route)
 func get_all_trace_ids_with_trigger_route(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
@@ -249,9 +276,11 @@ func get_all_trace_ids_with_trigger_route(w http.ResponseWriter, r *http.Request
     fmt.Println("trigger_route is missing in parameters")
   }
 
+  tre := strings.Fields(trigger_route)
+  trigger_route = tre[0] + " " + tre[1] + "//" + tre[2] + "/" + tre[3]
   fmt.Println(`trigger_route=`, trigger_route)
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trigger_route=%s;", trigger_route);
+  query := fmt.Sprintf("SELECT JSON trace_id FROM project.spans WHERE trigger_route='%s' ALLOW FILTERING;", trigger_route);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -401,6 +430,7 @@ func main() {
   output("Declaring router...")
   r := mux.NewRouter()
   r.Path("/spans").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans)
+  r.Path("/spans_by_trace/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_trace)
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
