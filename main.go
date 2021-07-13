@@ -175,6 +175,7 @@ func get_all_spans(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// r.Path("/spans_by_trace/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_trace)
 func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
@@ -186,6 +187,33 @@ func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s' ALLOW FILTERING;", trace_id);
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
+// r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
+func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  vars := mux.Vars(r);
+  chapter_id, ok := vars["id"]
+
+  if !ok {
+    fmt.Println("chapter_id is missing in parameters")
+  }
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE chapter_id='%s' ALLOW FILTERING;", chapter_id);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -219,6 +247,33 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "application/json")
   fmt.Fprintf(w, js)
   output("Retrieved events", js)
+}
+
+// r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
+func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  vars := mux.Vars(r);
+  chapter_id, ok := vars["id"]
+
+  if !ok {
+    fmt.Println("chapter_id is missing in parameters")
+  }
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.events WHERE chapter_id='%s' ALLOW FILTERING;", chapter_id);
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
 }
 
 func insert_spans(w http.ResponseWriter, r *http.Request) {
@@ -265,8 +320,8 @@ func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-// r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_with_trigger_route)
-func get_all_trace_ids_with_trigger_route(w http.ResponseWriter, r *http.Request) {
+// r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger_route)
+func get_all_trace_ids_by_trigger_route(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
   vars := mux.Vars(r);
@@ -281,6 +336,35 @@ func get_all_trace_ids_with_trigger_route(w http.ResponseWriter, r *http.Request
   fmt.Println(`trigger_route=`, trigger_route)
 
   query := fmt.Sprintf("SELECT JSON trace_id FROM project.spans WHERE trigger_route='%s' ALLOW FILTERING;", trigger_route);
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
+// r.Path("/chapters_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
+func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  vars := mux.Vars(r);
+  session_id, ok := vars["id"]
+
+  if !ok {
+    fmt.Println("session_id is missing in parameters")
+  }
+
+  fmt.Println(`session id=`, session_id)
+
+  query := fmt.Sprintf("SELECT JSON chapter_id FROM project.spans WHERE session_id='%s' ALLOW FILTERING;", session_id);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -431,11 +515,14 @@ func main() {
   r := mux.NewRouter()
   r.Path("/spans").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans)
   r.Path("/spans_by_trace/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_trace)
+  r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
+  r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
-  r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_with_trigger_route)
+  r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger_route)
+  r.Path("/chapters_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
   http.Handle("/", r)
 
   output("Now listening on", cfg.Port)
