@@ -380,8 +380,8 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
-  trace_id, _ := r.FormValue("trace_id")
-  status_code, _ := r.FormValue("status_code")
+  trace_id := r.FormValue("trace_id")
+  status_code := r.FormValue("status_code")
   fmt.Println("trace_id", trace_id)
   fmt.Println("status_code", status_code)
 
