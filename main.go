@@ -552,10 +552,10 @@ func main() {
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
   r.Path("/spanSearch").
-    Queries("trace_id", "{[a-zA-Z0-9_]*?}").
-    Queries("user_id", "{[a-zA-Z0-9_]*?}").
-    Queries("session_id", "{[a-zA-Z0-9_]*?}").
-    Queries("chapter_id", "{[a-zA-Z0-9_]*?}").
+    Queries("trace_id", "{[a-zA-Z0-9]*?}").
+    Queries("user_id", "{[a-zA-Z0-9]*?}").
+    Queries("session_id", "{[a-zA-Z0-9]*?}").
+    Queries("chapter_id", "{[a-zA-Z0-9]*?}").
     Queries("status_code", "{[0-9]*?}").
     HandlerFunc(span_search_handler)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
