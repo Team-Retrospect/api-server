@@ -381,12 +381,28 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
-  trace_id := r.FormValue("trace_id")
-  status_code := Number(r.FormValue("status_code"))
-  i, err := strconv.Atoi(status_code);
-  fmt.Println("i", i)
+  // trace_id := r.FormValue("trace_id")
+  // status_code := r.FormValue("status_code")
+  // i, err := strconv.Atoi(status_code);
+  // fmt.Println("i", i)
+  acceptedParams := []string {
+    "trace_id",
+    "status_code",
+  }
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s' AND status_code='%d' ALLOW FILTERING;", trace_id, i);
+  var dynamicQuery []string
+
+  for _, p := range acceptedParams {
+    val := r.FormValue(p)
+    if val != "" {
+      dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v=%v", p, val))
+    }
+  }
+
+  dynamicQueryString := strings.Join(dynamicQuery," AND ")
+  fmt.Println(dynamicQueryString)
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans " + dynamicQueryString + ";")
   fmt.Println("query", query)
   scanner := session.Query(query).Iter().Scanner()
 
