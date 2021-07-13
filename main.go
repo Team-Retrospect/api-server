@@ -386,7 +386,7 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   fmt.Println("trace_id", trace_id)
   fmt.Println("status_code", status_code)
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s' AND status_code='%s';", trace_id, status_code);
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s' AND status_code='%d' ALLOW FILTERING;", trace_id, status_code);
   fmt.Println("query", query)
   scanner := session.Query(query).Iter().Scanner()
 
