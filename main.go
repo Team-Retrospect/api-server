@@ -387,7 +387,12 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   // fmt.Println("i", i)
   acceptedParams := []string {
     "trace_id",
+    "user_id",
+    "session_id",
+    "chapter_id",
     "status_code",
+    // "time_sent",
+    // "time_duration",
   }
 
   var dynamicQuery []string
@@ -539,8 +544,6 @@ func main() {
   session = s
   defer session.Close()
 
-
-
   output("Declaring router...")
   r := mux.NewRouter()
   r.Path("/spans").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans)
@@ -548,7 +551,13 @@ func main() {
   r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
-  r.Path("/spanSearch").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
+  r.Path("/spanSearch").
+    Queries("trace_id", "{[a-zA-Z0-9_]*?}").
+    Queries("user_id", "{[a-zA-Z0-9_]*?}").
+    Queries("session_id", "{[a-zA-Z0-9_]*?}").
+    Queries("chapter_id", "{[a-zA-Z0-9_]*?}").
+    Queries("status_code", "{[0-9]*?}").
+    HandlerFunc(span_search_handler)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
