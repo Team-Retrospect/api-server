@@ -407,7 +407,7 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   fmt.Println(dynamicQueryString)
 
   if len(dynamicQueryString) != 0 {
-    dynamicQueryString = "WHERE " + dynamicQueryString
+    dynamicQueryString = "WHERE " + dynamicQueryString + " ALLOW FILTERING"
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans " + dynamicQueryString + ";")
