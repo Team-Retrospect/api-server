@@ -381,7 +381,7 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
 func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
-  query := fmt.Sprintf("SELECT JSON trigger_id, chapter_id FROM project.spans;");
+  query := fmt.Sprintf("SELECT JSON trigger_id, chapter_id FROM project.spans ALLOW FILTERING;");
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
