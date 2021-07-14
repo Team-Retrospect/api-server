@@ -401,10 +401,6 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
-  // trace_id := r.FormValue("trace_id")
-  // status_code := r.FormValue("status_code")
-  // i, err := strconv.Atoi(status_code);
-  // fmt.Println("i", i)
   acceptedParams := []string {
     "trace_id",
     "user_id",
@@ -413,6 +409,53 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
     "status_code",
     // "time_sent",
     // "time_duration",
+  }
+
+  var dynamicQuery []string
+
+  for _, p := range acceptedParams {
+    val := r.FormValue(p)
+    if val != "" {
+      if p != "status_code" {
+        dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v='%v'", p, val))
+      } else {
+        dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v=%v", p, val))
+      }
+    }
+  }
+
+  dynamicQueryString := strings.Join(dynamicQuery," AND ")
+  fmt.Println(dynamicQueryString)
+
+  if len(dynamicQueryString) != 0 {
+    dynamicQueryString = "WHERE " + dynamicQueryString + " ALLOW FILTERING"
+  }
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans " + dynamicQueryString + ";")
+  fmt.Println("query", query)
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
+func event_search_handler(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  acceptedParams := []string {
+    "user_id",
+    "session_id",
+    "chapter_id",
+    // "data"
   }
 
   var dynamicQuery []string
@@ -574,6 +617,7 @@ func main() {
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
   r.Path("/span_search").Queries("trace_id", "{trace_id:[\\w\\-]*?}", "user_id", "{user_id:[\\w\\-]*?}", "session_id", "{session_id:[\\w\\-]*?}", "chapter_id", "{chapter_id:[\\w\\-]*?}", "status_code", "{status_code:[0-9]*?}").HandlerFunc(span_search_handler)
+  r.Path("/event_search").Queries("user_id", "{user_id:[\\w\\-]*?}", "session_id", "{session_id:[\\w\\-]*?}", "chapter_id", "{chapter_id:[\\w\\-]*?}").HandlerFunc(event_search_handler)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
