@@ -478,7 +478,7 @@ func event_search_handler(w http.ResponseWriter, r *http.Request) {
     dynamicQueryString = "WHERE " + dynamicQueryString + " ALLOW FILTERING"
   }
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.spans " + dynamicQueryString + ";")
+  query := fmt.Sprintf("SELECT JSON * FROM project.events " + dynamicQueryString + ";")
   fmt.Println("query", query)
   scanner := session.Query(query).Iter().Scanner()
 
