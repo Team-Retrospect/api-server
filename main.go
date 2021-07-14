@@ -377,6 +377,26 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
+func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
+  if (cfg.UseHTTPS) { enableCors(&w) }
+
+  query := fmt.Sprintf("SELECT JSON trigger_id, chapter_id FROM project.spans;");
+  scanner := session.Query(query).Iter().Scanner()
+
+  var j []string
+  for scanner.Next() {
+    var s string
+    scanner.Scan(&s)
+    j = append(j, s)
+  }
+
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
 // r.Path("/span_search").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
@@ -558,7 +578,8 @@ func main() {
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
   r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger_route)
-  r.Path("/chapters_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
+  r.Path("/chapter_ids_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
+  r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
   http.Handle("/", r)
 
   output("Now listening on", cfg.Port)
