@@ -377,7 +377,7 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-// r.Path("/spanSearch").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
+// r.Path("/span_search").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
   if (cfg.UseHTTPS) { enableCors(&w) }
 
@@ -553,7 +553,7 @@ func main() {
   r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
-  r.Path("/spanSearch").Queries("trace_id", "{trace_id:[\\w\\-]*?}", "user_id", "{user_id:[\\w\\-]*?}", "session_id", "{session_id:[\\w\\-]*?}", "chapter_id", "{chapter_id:[\\w\\-]*?}", "status_code", "{status_code:[0-9]*?}").HandlerFunc(span_search_handler)
+  r.Path("/span_search").Queries("trace_id", "{trace_id:[\\w\\-]*?}", "user_id", "{user_id:[\\w\\-]*?}", "session_id", "{session_id:[\\w\\-]*?}", "chapter_id", "{chapter_id:[\\w\\-]*?}", "status_code", "{status_code:[0-9]*?}").HandlerFunc(span_search_handler)
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
