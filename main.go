@@ -586,9 +586,9 @@ func main() {
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
-  r.Path("/trace_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger)
+  r.Path("/trace_ids_by_trigger").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger)
   r.Path("/chapter_ids_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
-  r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
+  r.Path("/chapter_ids_by_trigger").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
   http.Handle("/", r)
 
   header := handlers.AllowedHeaders([]string{"Accept", "Content-Length", "Accept-Encoding", "Authorization", "X-CSRF-Token", "User-Id", "Session-Id", "Chapter-Id", "X-Requested-With", "Content-Type", "Authorization"})
