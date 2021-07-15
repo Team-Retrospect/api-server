@@ -407,8 +407,7 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
     "session_id",
     "chapter_id",
     "status_code",
-    // "time_sent",
-    // "time_duration",
+    "data",
   }
 
   var dynamicQuery []string
@@ -417,6 +416,10 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
     val := r.FormValue(p)
     if val != "" {
       if p != "status_code" {
+        if p == "data" {
+          dynamicQuery = append(dynamicQuery, fmt.Sprintf("'%v:*%v*'", p, val))
+          continue
+        }
         dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v='%v'", p, val))
       } else {
         dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v=%v", p, val))
