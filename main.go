@@ -54,20 +54,20 @@ type TraceData struct {
 //     Password string `env:"PASSWORD"`
 
 type ConfigStruct struct {
-// debug: false
+  // debug: false
   Debug         bool    `yaml:"debug"`
 
-// cluster: "cassandra.domain.com"
+  // cluster: "cassandra.domain.com"
   Cluster       string  `yaml:"cluster"`
 
-// port: ":443"
+  // port: ":443"
   Port          string  `yaml:"port"`
 
-// use_https: true
+  // use_https: true
   UseHTTPS      bool    `yaml:"use_https"`
-// fullcert: "/etc/letsencrypt/live/api.domain.com/fullchain.pem"
+  // fullcert: "/etc/letsencrypt/live/api.domain.com/fullchain.pem"
   FullCert      string  `yaml:"fullcert"`
-// privatekey: "/etc/letsencrypt/live/api.domain.com/privkey.pem"
+  // privatekey: "/etc/letsencrypt/live/api.domain.com/privkey.pem"
   PrivateKey    string  `yaml:"privatekey"`
 }
 
@@ -134,15 +134,8 @@ type TriggerRoutePayload struct {
 
 func get_all_spans(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON * FROM project.spans;"
-  scanner := session.Query(query).Iter().Scanner()
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -159,15 +152,8 @@ func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE trace_id='%s';", trace_id);
-  scanner := session.Query(query).Iter().Scanner()
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -184,15 +170,8 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE chapter_id='%s';", chapter_id);
-  scanner := session.Query(query).Iter().Scanner()
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -201,15 +180,8 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
 
 func get_all_events(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON * FROM project.events;"
-  scanner := session.Query(query).Iter().Scanner()
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -227,15 +199,8 @@ func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.events WHERE chapter_id='%s';", chapter_id);
-  scanner := session.Query(query).Iter().Scanner()
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -267,15 +232,9 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
 
 func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON trigger_route, data FROM project.spans;"
-  scanner := session.Query(query).Iter().Scanner()
+  output(query)
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -288,15 +247,9 @@ func get_all_trace_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   trigger_route := string(body)
 
   query := fmt.Sprintf("SELECT trace_id FROM project.spans WHERE trigger_route='%s' ALLOW FILTERING;", trigger_route);
-  scanner := session.Query(query).Iter().Scanner()
+  output(query)
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
 
   w.Header().Set("Content-Type", "application/json")
@@ -309,21 +262,14 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   session_id, ok := vars["id"]
 
   if !ok {
-    fmt.Println("session_id is missing in parameters")
+    output("session_id is missing in parameters")
+    // TODO: return this as error
   }
-
-  fmt.Println(`session id=`, session_id)
 
   query := fmt.Sprintf("SELECT JSON chapter_id FROM project.spans WHERE session_id='%s';", session_id);
-  scanner := session.Query(query).Iter().Scanner()
+  output(query)
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -336,15 +282,9 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   target := string(body)
 
   query := fmt.Sprintf("SELECT chapter_id FROM project.spans WHERE trigger_route='%v' ALLOW FILTERING;", target);
-  scanner := session.Query(query).Iter().Scanner()
+  output(query)
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
 
   w.Header().Set("Content-Type", "application/json")
@@ -382,16 +322,9 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans " + dynamicQueryString + ";")
-  fmt.Println("query", query)
-  scanner := session.Query(query).Iter().Scanner()
+  output(query)
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -426,16 +359,8 @@ func event_search_handler(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.events " + dynamicQueryString + ";")
-  fmt.Println("query", query)
-  scanner := session.Query(query).Iter().Scanner()
 
-  var j []string
-  for scanner.Next() {
-    var s string
-    scanner.Scan(&s)
-    j = append(j, s)
-  }
-
+  j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
   w.Header().Set("Content-Type", "application/json")
@@ -507,6 +432,18 @@ func format_events(blob []byte, r *http.Request) []*CassandraEvent {
     })
   // }
   return cevents
+}
+
+func enumerate_query(query string) (sa []string) {
+  scan := session.Query(query).Iter().Scanner()
+
+  for scan.Next() {
+    var s string
+    scan.Scan(&s)
+    sa = append(sa, s)
+  }
+
+  return
 }
 
 /* orchestrate */
