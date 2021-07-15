@@ -407,6 +407,7 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
     "session_id",
     "chapter_id",
     "status_code",
+    "request_data",
     "data_contains",
   }
 
@@ -416,11 +417,14 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
     val := r.FormValue(p)
     if val != "" {
       if p != "status_code" {
-        if p == "data_contains" {
-          dynamicQuery = append(dynamicQuery, fmt.Sprintf("'data:*%v*'", val))
-          continue
+        switch p {
+        case "data_contains":
+          dynamicQuery = append(dynamicQuery, fmt.Sprintf("data LIKE '%%v%'", val))
+        case "request_data":
+          dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v LIKE '%%v%'", p, val))
+        default:
+          dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v='%v'", p, val))
         }
-        dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v='%v'", p, val))
       } else {
         dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v=%v", p, val))
       }
