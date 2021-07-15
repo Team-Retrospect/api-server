@@ -8,7 +8,7 @@ import (
   "encoding/json"
   "io"
 
-  "github.com/Team-Textrix/cassandra-connector/structs"
+  "github.com/Team-Textrix/cassandra-connector/src/structs"
 )
 
 func format_spans(blob []byte) []*structs.CassandraSpan {

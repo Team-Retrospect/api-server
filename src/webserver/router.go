@@ -10,7 +10,7 @@ import (
   "github.com/gorilla/handlers"
   "github.com/gorilla/mux"
 
-  "github.com/Team-Textrix/cassandra-connector/structs"
+  "github.com/Team-Textrix/cassandra-connector/src/structs"
 )
 
 // initialze a database session variable

@@ -23,8 +23,8 @@ import (
 	"github.com/gocql/gocql"
 
   // ----
-  "github.com/Team-Textrix/cassandra-connector/webserver"
-  "github.com/Team-Textrix/cassandra-connector/structs"
+  "github.com/Team-Textrix/cassandra-connector/src/webserver"
+  "github.com/Team-Textrix/cassandra-connector/src/structs"
 )
 
 func output(contents ...string) {
@@ -43,7 +43,7 @@ var debug bool = false;
 var cfg structs.Config
 // taking the information from the .yml file and putting it into a Struct
 func load_cfg() {
-  cleanenv.ReadConfig("config.yml", &cfg)
+  cleanenv.ReadConfig("./config.yml", &cfg)
   debug = cfg.Debug
 }
 
