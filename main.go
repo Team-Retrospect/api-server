@@ -53,12 +53,11 @@ type TraceData struct {
 // (read from environment variables? err := cleanenv.ReadEnv(&cfg))
 //     Password string `env:"PASSWORD"`
 
-
 type ConfigStruct struct {
 // debug: false
   Debug         bool    `yaml:"debug"`
 
-// cluster: "cassandra.xadi.io"
+// cluster: "cassandra.domain.com"
   Cluster       string  `yaml:"cluster"`
 
 // port: ":443"
@@ -66,9 +65,9 @@ type ConfigStruct struct {
 
 // use_https: true
   UseHTTPS      bool    `yaml:"use_https"`
-// fullcert: "/etc/letsencrypt/live/api.xadi.io/fullchain.pem"
+// fullcert: "/etc/letsencrypt/live/api.domain.com/fullchain.pem"
   FullCert      string  `yaml:"fullcert"`
-// privatekey: "/etc/letsencrypt/live/api.xadi.io/privkey.pem"
+// privatekey: "/etc/letsencrypt/live/api.domain.com/privkey.pem"
   PrivateKey    string  `yaml:"privatekey"`
 }
 
@@ -82,14 +81,8 @@ func load_cfg() {
 
 /* connect to db */
 
-// initializing a variable of type gocql.ClusterConfig
-// we will eventually set it equal to gocql.NewCluster(cfg.Cluster)
-// Q for Nicole: Why are these initialized outlide of main function?
-var cluster *gocql.ClusterConfig
-
-// initialize a variable of type gocql.Session
-// will eventually be set equal to cluster.CreateSession()
-// (see above to see what cluster is equal to)
+// initialze a database session variable
+// --> this is used for DB queries
 var session *gocql.Session
 
 // the cluster holds nodes (like layers) which hold tables
@@ -97,29 +90,26 @@ var session *gocql.Session
 // (in this case we only have one)
 // the nodes hold keyspaces (like a table)
 
-
 // zipkin data format
 type SpanStructInput struct {
-  Trace_id          string        `json:"traceId"`
-  Span_id           string        `json:"id"`
-  Time_sent         int           `json:"timestamp"`
-  Duration          int           `json:"duration"`
+  Trace_id          string              `json:"traceId"`
+  Span_id           string              `json:"id"`
+  Time_sent         int                 `json:"timestamp"`
+  Duration          int                 `json:"duration"`
 
-  Trigger_route     string        // `json:"trigger_route"`
-  Session_id        string        // `json:"session_id"`
-  User_id           string        // `json:"user_id"`
-  Status_code       string        // `json:"status_code"`
-  Chapter_id        string        // `json:"chapter_id"`
-  Tags              map[string]string        `json:"tags"`
+  Tags              map[string]string   `json:"tags"`
 }
 
+// span insertion struct
 type CassandraSpan struct {
+  // top-level span data
   Trace_id          string        `json:"trace_id"`
   Span_id           string        `json:"span_id"`
   Time_sent         int           `json:"time_sent"`
   Duration          string        `json:"time_duration"`
   Data              string        `json:"data"`
 
+  // derived from tags
   Trigger_route     string        `json:"trigger_route"`
   User_id           string        `json:"user_id"`
   Session_id        string        `json:"session_id"`
@@ -128,8 +118,8 @@ type CassandraSpan struct {
   Request_data      string        `json:"request_data"`
 }
 
+// event insertion struct
 type CassandraEvent struct {
-  // header data
   User_id           string        `json:"user_id"`
   Session_id        string        `json:"session_id"`
   Chapter_id        string        `json:"chapter_id"`
@@ -139,7 +129,6 @@ type CassandraEvent struct {
 type TriggerRoutePayload struct {
   Route string `json:"trigger_route"`
 }
-
 
 /* web server */
 
@@ -491,8 +480,6 @@ func format_spans(blob []byte) []*CassandraSpan {
   return cspans
 }
 
-
-
 func insert_events(w http.ResponseWriter, r *http.Request) {
   body, _ := io.ReadAll(r.Body)
   cevents := format_events(body, r)
@@ -516,10 +503,6 @@ func format_events(blob []byte, r *http.Request) []*CassandraEvent {
       User_id:            r.Header.Get("user-id"),
       Session_id:         r.Header.Get("session-id"),
       Chapter_id:         r.Header.Get("chapter-id"),
-
-      // Type:               e.Type,
-      // Data:               e.Data,
-      // Time_sent:          e.Event_time,
       Body: string(blob),
     })
   // }
@@ -530,14 +513,16 @@ func format_events(blob []byte, r *http.Request) []*CassandraEvent {
 func main() {
   load_cfg()
 
-  /* connect to cassandra here */
+  // connect to the Cassandra cluster
   output("Connecting to Cassandra...")
-  // connect to the cluster
-  cluster = gocql.NewCluster(cfg.Cluster)
+  cluster := gocql.NewCluster(cfg.Cluster)
   cluster.Consistency = gocql.Quorum
   cluster.ProtoVersion = 4
   cluster.ConnectTimeout = time.Second * 10
-  // cluster.Authenticator = gocql.PasswordAuthenticator{Username: "Username", Password: "Password"} //replace the username and password fields with their real settings.
+  // cluster.Authenticator = gocql.PasswordAuthenticator{
+  //   Username: "Username",
+  //   Password: "Password",
+  // } //replace the username and password fields with their real settings.
   s, err := cluster.CreateSession()
   if err != nil {
     log.Println(err)
