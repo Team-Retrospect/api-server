@@ -109,7 +109,7 @@ type SpanStructInput struct {
   Session_id        string        // `json:"session_id"`
   User_id           string        // `json:"user_id"`
   Status_code       string        // `json:"status_code"`
-  Chapter_id        string       // `json:"chapter_id"`
+  Chapter_id        string        // `json:"chapter_id"`
   Tags              map[string]string        `json:"tags"`
 }
 
@@ -119,7 +119,6 @@ type CassandraSpan struct {
   Time_sent         int           `json:"time_sent"`
   Duration          string        `json:"time_duration"`
   Data              string        `json:"data"`
-  // Data              map[string]string `json:"data"`
 
   Trigger_route     string        `json:"trigger_route"`
   User_id           string        `json:"user_id"`
@@ -129,27 +128,13 @@ type CassandraSpan struct {
   Request_data      string        `json:"request_data"`
 }
 
-type EventStructInput struct {
-  // body data only
-  // Type              string        `json:"type"`
-  // Data              string        `json:"data"`
-  // Event_time        string        `json:"timestamp"`
-}
-
 type CassandraEvent struct {
   // header data
   User_id           string        `json:"user_id"`
   Session_id        string        `json:"session_id"`
   Chapter_id        string        `json:"chapter_id"`
-
-  // body data
-  // Type              string        `json:"type"`
-  // Data              string        `json:"data"`
-  // Time_sent         string        `json:"time_sent"`
-  // Test string `json:"test"`
-  Body  string `json:"data"`
+  Body              string        `json:"data"`
 }
-
 
 type TriggerRoutePayload struct {
   Route string `json:"trigger_route"`
@@ -379,10 +364,6 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
 
 // r.Path("/span_search").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
-  // trace_id := r.FormValue("trace_id")
-  // status_code := r.FormValue("status_code")
-  // i, err := strconv.Atoi(status_code);
-  // fmt.Println("i", i)
   acceptedParams := []string {
     "trace_id",
     "user_id",
@@ -473,16 +454,9 @@ func event_search_handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func format_spans(blob []byte) []*CassandraSpan {
-  // unmarshal the json blob
-  
   // initializing an array of SpanStructInput objects
   var jspans []*SpanStructInput
   json.Unmarshal(blob, &jspans)
-// <<<<<<< HEAD
-// =======
-
-  // for i, v := range(jspans) { fmt.Println("jspan", i, v) }
-// >>>>>>> c1e2d39cbce5f6571cfe5df0b3c6cd19188e8046
 
   // convert them into cassandra-compatible structs
   cspans := make([]*CassandraSpan, len(jspans))
@@ -490,12 +464,15 @@ func format_spans(blob []byte) []*CassandraSpan {
   for _, e := range(jspans) {
     if e == nil { continue }
     sc, _ := strconv.ParseInt(e.Tags["http.status_code"], 10, 64)
-    rd := e.Tags["requestData"]
+    request_data := e.Tags["requestData"]
     delete(e.Tags, "requestData")
 
+    // encase in JSON syntax
     tags := "{";
     for k, v := range(e.Tags) { tags += fmt.Sprintf(`"%s": "%s", `, k, v) }
     tags = tags[0:len(tags)-2] + "}"
+    // escape where necessary to safeguard against injections
+    tags = strings.Replace(fmt.Sprint(tags), "'", "\\'", -1) //
 
     cspans = append(cspans, &CassandraSpan{
       Trace_id:       e.Trace_id,
@@ -506,12 +483,9 @@ func format_spans(blob []byte) []*CassandraSpan {
       User_id:        e.Tags["frontendUser"],
       Chapter_id:     e.Tags["frontendChapter"],
       Trigger_route:  e.Tags["triggerRoute"],
-      Request_data:   rd,
+      Request_data:   request_data,
       Status_code:    int16(sc),
-      // note for nicole: what is the point of the string replacement?
-      // We can't see any single quotes in the tags, nor any double
-      // slashes in the resulting Data
-      Data:           strings.Replace(fmt.Sprint(tags), "'", "\\'", -1),
+      Data:           tags,
     })
   }
   return cspans
@@ -571,8 +545,6 @@ func main() {
   }
   session = s
   defer session.Close()
-
-  // "user_id", "{[a-zA-Z0-9_]*?}", "session_id", "{[a-zA-Z0-9_]*?}", "chapter_id", "{[a-zA-Z0-9_]*?}", 
 
   output("Declaring router...")
   r := mux.NewRouter()
