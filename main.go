@@ -30,6 +30,7 @@ import (
 	// "io/ioutil"
 	"io"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -153,8 +154,6 @@ type CassandraEvent struct {
 /* web server */
 
 func get_all_spans(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   query := "SELECT JSON * FROM project.spans;"
   scanner := session.Query(query).Iter().Scanner()
 
@@ -173,8 +172,6 @@ func get_all_spans(w http.ResponseWriter, r *http.Request) {
 
 // r.Path("/spans_by_trace/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_trace)
 func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   vars := mux.Vars(r);
   trace_id, ok := vars["id"]
 
@@ -200,8 +197,6 @@ func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
 
 // r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
 func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   vars := mux.Vars(r);
   chapter_id, ok := vars["id"]
 
@@ -226,8 +221,6 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
 }
 
 func get_all_events(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   query := "SELECT JSON * FROM project.events;"
   scanner := session.Query(query).Iter().Scanner()
 
@@ -247,8 +240,6 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
 
 // r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
 func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   vars := mux.Vars(r);
   chapter_id, ok := vars["id"]
 
@@ -274,8 +265,6 @@ func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
 
 func insert_spans(w http.ResponseWriter, r *http.Request) {
   output("Inserting a Span")
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   // r.Body is type *http.bodyblob
   // io.ReadAll returns an array of bytes
   body, _ := io.ReadAll(r.Body)
@@ -298,8 +287,6 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
 }
 
 func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   query := "SELECT JSON trigger_route, data FROM project.spans;"
   scanner := session.Query(query).Iter().Scanner()
 
@@ -319,8 +306,6 @@ func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
 // r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger_route)
 // might be better to just do the filtering on the client side
 func get_all_trace_ids_by_trigger_route(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   vars := mux.Vars(r);
   trigger_route, ok := vars["trigger_route"]
 
@@ -350,8 +335,6 @@ func get_all_trace_ids_by_trigger_route(w http.ResponseWriter, r *http.Request) 
 
 // r.Path("/chapters_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
 func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   vars := mux.Vars(r);
   session_id, ok := vars["id"]
 
@@ -379,8 +362,6 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
 
 // r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
 func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   query := fmt.Sprintf("SELECT JSON trigger_route, chapter_id FROM project.spans ALLOW FILTERING;");
   scanner := session.Query(query).Iter().Scanner()
 
@@ -399,8 +380,10 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
 
 // r.Path("/span_search").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
+  // trace_id := r.FormValue("trace_id")
+  // status_code := r.FormValue("status_code")
+  // i, err := strconv.Atoi(status_code);
+  // fmt.Println("i", i)
   acceptedParams := []string {
     "trace_id",
     "user_id",
@@ -540,8 +523,6 @@ func format_spans(blob []byte) []*CassandraSpan {
 
 
 func insert_events(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   body, _ := io.ReadAll(r.Body)
   cevents := format_events(body, r)
 
@@ -573,16 +554,6 @@ func format_events(blob []byte, r *http.Request) []*CassandraEvent {
   // }
   return cevents
 }
-
-func enableCors(w *http.ResponseWriter) {
-  allowedHeaders := "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-Token, Tracer-Source, User-Id, Session-Id, Chapter-Id"
-  (*w).Header().Set("Access-Control-Allow-Origin", "*")
-  (*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-  (*w).Header().Set("Access-Control-Allow-Headers", allowedHeaders)
-  (*w).Header().Set("Access-Control-Expose-Headers", "Authorization")
-}
-
-
 
 /* orchestrate */
 func main() {
@@ -623,13 +594,17 @@ func main() {
   r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
   http.Handle("/", r)
 
+  header := handlers.AllowedHeaders([]string{"Accept", "Content-Length", "Accept-Encoding", "Authorization", "X-CSRF-Token", "User-Id", "Session-Id", "Chapter-Id", "X-Requested-With", "Content-Type", "Authorization"})
+  methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
+  origins := handlers.AllowedOrigins([]string{"*"})
+
   output("Now listening on", cfg.Port)
   if (cfg.UseHTTPS) {
-    if err := http.ListenAndServeTLS(cfg.Port, cfg.FullCert, cfg.PrivateKey, nil); err != nil {
+    if err := http.ListenAndServeTLS(cfg.Port, cfg.FullCert, cfg.PrivateKey, handlers.CORS(header, methods, origins)(r)); err != nil {
       log.Fatal(err)
     }
   } else {
-    if err := http.ListenAndServe(cfg.Port, nil); err != nil {
+    if err := http.ListenAndServe(cfg.Port, handlers.CORS(header, methods, origins)(r)); err != nil {
       log.Fatal(err)
     }
   }
