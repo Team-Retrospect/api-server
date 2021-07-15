@@ -126,10 +126,6 @@ type CassandraEvent struct {
   Body              string        `json:"data"`
 }
 
-type TriggerRoutePayload struct {
-  Route string `json:"trigger_route"`
-}
-
 /* web server */
 
 func get_all_spans(w http.ResponseWriter, r *http.Request) {
