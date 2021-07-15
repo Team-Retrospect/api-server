@@ -30,6 +30,7 @@ import (
 	// "io/ioutil"
 	"io"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -582,13 +583,19 @@ func main() {
   r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
   http.Handle("/", r)
 
+  // allowedHeaders := "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization, X-CSRF-Token, Tracer-Source, User-Id, Session-Id, Chapter-Id"
+  header := handlers.AllowedHeaders([]string{"Accept", "Content-Length", "Accept-Encoding", "Authorization", "X-CSRF-Token", "User-Id", "Session-Id", "Chapter-Id", "X-Requested-With", "Content-Type", "Authorization"})
+  methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "OPTIONS"})
+  origins := handlers.AllowedOrigins([]string{"*"})
+
+
   output("Now listening on", cfg.Port)
   if (cfg.UseHTTPS) {
     if err := http.ListenAndServeTLS(cfg.Port, cfg.FullCert, cfg.PrivateKey, nil); err != nil {
       log.Fatal(err)
     }
   } else {
-    if err := http.ListenAndServe(cfg.Port, nil); err != nil {
+    if err := http.ListenAndServe(cfg.Port, handlers.CORS(header, methods, origins)(r)); err != nil {
       log.Fatal(err)
     }
   }
