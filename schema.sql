@@ -26,6 +26,8 @@ CREATE INDEX ON project.spans (session_id);
 CREATE INDEX ON project.spans (user_id);
 CREATE INDEX ON project.spans (chapter_id);
 CREATE INDEX ON project.spans (time_sent);
+CREATE INDEX ON project.spans (request_data);
+CREATE INDEX ON project.spans (data);
 
 
 
@@ -44,6 +46,7 @@ PRIMARY KEY(data)
 CREATE INDEX ON project.events (session_id);
 CREATE INDEX ON project.events (user_id);
 CREATE INDEX ON project.events (chapter_id);
+CREATE INDEX ON project.events (data);
 
 
-time_sent       timestamp,
+-- time_sent       timestamp,
