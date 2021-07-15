@@ -12,6 +12,7 @@ import (
   "github.com/Team-Textrix/cassandra-connector/structs"
 )
 
+// --> GET /spans
 func get_all_spans(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON * FROM project.spans;"
 
@@ -22,7 +23,7 @@ func get_all_spans(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-// r.Path("/spans_by_trace/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_trace)
+// --> GET /spans_by_trace/{id}
 func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r);
   trace_id, ok := vars["id"]
@@ -40,7 +41,7 @@ func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-// r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
+// --> GET /spans_by_chapter/{id}
 func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r);
   chapter_id, ok := vars["id"]
@@ -58,6 +59,7 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// --> GET /events
 func get_all_events(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON * FROM project.events;"
 
@@ -69,7 +71,7 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
   fmt.Println("Retrieved events", js)
 }
 
-// r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
+// --> GET /events_by_chapter/{id}
 func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r);
   chapter_id, ok := vars["id"]
@@ -87,6 +89,7 @@ func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// --> POST /spans
 func insert_spans(w http.ResponseWriter, r *http.Request) {
   fmt.Println("Inserting a Span")
   // r.Body is type *http.bodyblob
@@ -110,6 +113,7 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
 }
 
+// --> GET /trigger_routes
 func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON trigger_route, data FROM project.spans;"
   fmt.Println(query)
@@ -121,7 +125,7 @@ func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-//   r.Path("/trace_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger)
+// --> GET /trace_ids_by_trigger
 func get_all_trace_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   body, _ := io.ReadAll(r.Body)
   trigger_route := string(body)
@@ -136,7 +140,7 @@ func get_all_trace_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-// r.Path("/chapters_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
+// --> GET /chapters_by_session/{id}
 func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r);
   session_id, ok := vars["id"]
@@ -156,7 +160,7 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-// r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
+// --> GET /chapter_ids_by_trigger
 func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   body, _ := io.ReadAll(r.Body)
   target := string(body)
@@ -171,7 +175,7 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-// r.Path("/span_search").Queries("trace_id", "{[a-zA-Z0-9]*?}").Queries("status_code", "{[0-9]*?}").HandlerFunc(span_search_handler)
+// --> GET? /span_search
 func span_search_handler(w http.ResponseWriter, r *http.Request) {
   acceptedParams := []string {
     "trace_id",
@@ -211,6 +215,7 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// --> GET? /event_search
 func event_search_handler(w http.ResponseWriter, r *http.Request) {
   acceptedParams := []string {
     "user_id",
