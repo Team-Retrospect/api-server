@@ -419,9 +419,9 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
       if p != "status_code" {
         switch p {
         case "data_contains":
-          dynamicQuery = append(dynamicQuery, fmt.Sprintf("solr_query = 'data:*%v*'", val))
+          dynamicQuery = append(dynamicQuery, fmt.Sprintf("data ~ '*%v*'", val))
         case "request_data":
-          dynamicQuery = append(dynamicQuery, fmt.Sprintf("solr_query = '%v:*%v*'", p, val))
+          dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v ~ '*%v*'", p, val))
         default:
           dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v='%v'", p, val))
         }
