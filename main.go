@@ -151,6 +151,11 @@ type CassandraEvent struct {
 }
 
 
+type TriggerRoutePayload struct {
+  Route string `json:"trigger_route"`
+}
+
+
 /* web server */
 
 func get_all_spans(w http.ResponseWriter, r *http.Request) {
@@ -303,21 +308,12 @@ func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
-// r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger_route)
-// might be better to just do the filtering on the client side
-func get_all_trace_ids_by_trigger_route(w http.ResponseWriter, r *http.Request) {
-  vars := mux.Vars(r);
-  trigger_route, ok := vars["trigger_route"]
+//   r.Path("/trace_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger)
+func get_all_trace_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
+  body, _ := io.ReadAll(r.Body)
+  trigger_route := string(body)
 
-  if !ok {
-    fmt.Println("trigger_route is missing in parameters")
-  }
-
-  tre := strings.Fields(trigger_route)
-  trigger_route = tre[0] + " " + tre[1] + "//" + tre[2] + "/" + tre[3]
-  fmt.Println(`trigger_route=`, trigger_route)
-
-  query := fmt.Sprintf("SELECT JSON trace_id FROM project.spans WHERE trigger_route='%s' ALLOW FILTERING;", trigger_route);
+  query := fmt.Sprintf("SELECT trace_id FROM project.spans WHERE trigger_route='%s' ALLOW FILTERING;", trigger_route);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -327,7 +323,7 @@ func get_all_trace_ids_by_trigger_route(w http.ResponseWriter, r *http.Request) 
     j = append(j, s)
   }
 
-  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+  js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
 
   w.Header().Set("Content-Type", "application/json")
   fmt.Fprintf(w, js)
@@ -362,7 +358,10 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
 
 // r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
 func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
-  query := fmt.Sprintf("SELECT JSON trigger_route, chapter_id FROM project.spans ALLOW FILTERING;");
+  body, _ := io.ReadAll(r.Body)
+  target := string(body)
+
+  query := fmt.Sprintf("SELECT chapter_id FROM project.spans WHERE trigger_route='%v' ALLOW FILTERING;", target);
   scanner := session.Query(query).Iter().Scanner()
 
   var j []string
@@ -372,7 +371,7 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
     j = append(j, s)
   }
 
-  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+  js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
 
   w.Header().Set("Content-Type", "application/json")
   fmt.Fprintf(w, js)
@@ -430,8 +429,6 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func event_search_handler(w http.ResponseWriter, r *http.Request) {
-  if (cfg.UseHTTPS) { enableCors(&w) }
-
   acceptedParams := []string {
     "user_id",
     "session_id",
@@ -589,7 +586,7 @@ func main() {
   r.Path("/spans").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_spans)
   r.Path("/events").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_events)
   r.Path("/trigger_routes").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trigger_routes)
-  r.Path("/trace_ids/{trigger_route}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger_route)
+  r.Path("/trace_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger)
   r.Path("/chapter_ids_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
   r.Path("/chapter_ids_by_trigger").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
   http.Handle("/", r)
