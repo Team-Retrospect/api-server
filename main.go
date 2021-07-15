@@ -407,8 +407,6 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
     "session_id",
     "chapter_id",
     "status_code",
-    "request_data",
-    "data_contains",
   }
 
   var dynamicQuery []string
@@ -417,14 +415,7 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
     val := r.FormValue(p)
     if val != "" {
       if p != "status_code" {
-        switch p {
-        case "data_contains":
-          dynamicQuery = append(dynamicQuery, fmt.Sprintf("data ~ '*%v*'", val))
-        case "request_data":
-          dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v ~ '*%v*'", p, val))
-        default:
-          dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v='%v'", p, val))
-        }
+        dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v='%v'", p, val))
       } else {
         dynamicQuery = append(dynamicQuery, fmt.Sprintf("%v=%v", p, val))
       }
@@ -462,7 +453,6 @@ func event_search_handler(w http.ResponseWriter, r *http.Request) {
     "user_id",
     "session_id",
     "chapter_id",
-    // "data"
   }
 
   var dynamicQuery []string
