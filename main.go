@@ -504,11 +504,9 @@ func format_spans(blob []byte) []*CassandraSpan {
 		// if it's a db span and doesn't contain session info: add frontend session info
 		_, ok := e.Tags["db.system"]
 		_, ok2 := e.Tags["frontendSession"]
+
 		if ok && !ok2 {
 			tId := e.Trace_id
-
-			// don't remove: this prevents reading from db before root span is added
-			time.Sleep(1 * time.Second / 4)
 
 			oneSpan := get_span_by_trace(tId)
 
@@ -548,17 +546,28 @@ func format_spans(blob []byte) []*CassandraSpan {
 
 // used by format_spans method to fix missing frontend sessions in db spans
 func get_span_by_trace(traceId string) *CassandraSpan {
-	query := fmt.Sprintf("SELECT JSON chapter_id, user_id, session_id, trigger_route FROM project.spans WHERE trace_id='%s' LIMIT 1;", traceId)
-
-	scanner := session.Query(query).Iter().Scanner()
-
 	var j []string
 
-	for scanner.Next() {
-		var s string
-		scanner.Scan(&s)
-		j = append(j, s)
+	counter := 0
+
+	for len(j) <= 0 {
+		query := fmt.Sprintf("SELECT JSON chapter_id, user_id, session_id, trigger_route FROM project.spans WHERE trace_id='%s' LIMIT 1;", traceId)
+
+		scanner := session.Query(query).Iter().Scanner()
+
+		for scanner.Next() {
+			var s string
+			scanner.Scan(&s)
+			j = append(j, s)
+		}
+
+		if counter == 3 {
+			break
+		}
+
+		counter++
 	}
+
 	var cspan *CassandraSpan
 
 	json.Unmarshal([]byte(j[0]), &cspan)
