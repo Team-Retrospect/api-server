@@ -28,11 +28,13 @@ import (
 )
 
 func output(contents ...string) {
-  if (debug) { fmt.Println(contents) }
+	if debug {
+		fmt.Println(contents)
+	}
 }
+
 /* load configs from config.yml */
 // property names match the data in the config.yml
-
 
 // may have to add database credentials to this struct
 // when we dockerize the application
