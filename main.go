@@ -501,23 +501,21 @@ func format_spans(blob []byte) []*CassandraSpan {
 			continue
 		}
 
-		// if it's a db span, add frontend session info
+		// if it's a db span and doesn't contain session info: add frontend session info
 		_, ok := e.Tags["db.system"]
-		if ok {
-			// get trace id
+		_, ok2 := e.Tags["frontendSession"]
+		if ok && !ok2 {
 			tId := e.Trace_id
 
-			fmt.Println("BEFORE UPDATING SPAN", e.Tags)
+			// don't remove: this prevents reading from db before root span is added
+			time.Sleep(1 * time.Second / 4)
 
 			oneSpan := get_span_by_trace(tId)
-			fmt.Println("ONE SPAN IS", oneSpan)
 
 			e.Tags["frontendChapter"] = oneSpan.Chapter_id
 			e.Tags["frontendSession"] = oneSpan.Session_id
 			e.Tags["frontendUser"] = oneSpan.User_id
 			e.Tags["triggerRoute"] = oneSpan.Trigger_route
-
-			fmt.Println("COMPLETED SPAN IS >>>>>>>>>", e.Tags)
 		}
 
 		delete(e.Tags, "requestData")
@@ -548,15 +546,11 @@ func format_spans(blob []byte) []*CassandraSpan {
 	return cspans
 }
 
-// internal method used to fix frontend session values in db spans
+// used by format_spans method to fix missing frontend sessions in db spans
 func get_span_by_trace(traceId string) *CassandraSpan {
-
 	query := fmt.Sprintf("SELECT JSON chapter_id, user_id, session_id, trigger_route FROM project.spans WHERE trace_id='%s' LIMIT 1;", traceId)
-	// query := "SELECT JSON chapter_id, user_id, session_id, trigger_route FROM project.spans WHERE trace_id = '18659de1a939de4989d102714cb192d8' LIMIT 1;"
 
 	scanner := session.Query(query).Iter().Scanner()
-
-	// fmt.Println("SCANNER IS", scanner)
 
 	var j []string
 
@@ -566,12 +560,9 @@ func get_span_by_trace(traceId string) *CassandraSpan {
 		j = append(j, s)
 	}
 	var cspan *CassandraSpan
-	// fmt.Println("PRINTING J >>>>>>", j)
+
 	json.Unmarshal([]byte(j[0]), &cspan)
 
-	// fmt.Println("J VALUE IS", cspan)
-
-	// returns cassandra struct
 	return cspan
 }
 
