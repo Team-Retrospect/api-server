@@ -5,14 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	/* config */
-	// "Clean and minimalistic environment configuration reader for Golang"
-	// "reads and parses configuration structure from the file
-	// reads and overwrites configuration structure from environment variables
-	// writes a detailed variable list to help output"
-	//   ReadConfig method takes a string representing the name of a config file
-	//    and a pointer to a struct (ex. Config)
-
 	// may have to use this when dockerizing
 	"github.com/ilyakaznacheev/cleanenv"
 
@@ -27,35 +19,17 @@ import (
   "github.com/Team-Textrix/cassandra-connector/src/structs"
 )
 
-func output(contents ...string) {
-	if debug {
-		fmt.Println(contents)
-	}
-}
-
-/* load configs from config.yml */
-// property names match the data in the config.yml
-
-// may have to add database credentials to this struct
-// when we dockerize the application
-// (read from environment variables? err := cleanenv.ReadEnv(&cfg))
-//     Password string `env:"PASSWORD"`
-
-var debug bool = false;
 var cfg structs.Config
 // taking the information from the .yml file and putting it into a Struct
 func load_cfg() {
   cleanenv.ReadConfig("./config.yml", &cfg)
-  debug = cfg.Debug
 }
 
-
-/* orchestrate */
 func main() {
   load_cfg()
 
   // connect to the Cassandra cluster
-  output("Connecting to Cassandra...")
+  fmt.Println("Connecting to Cassandra...")
   cluster := gocql.NewCluster(cfg.Cluster)
   cluster.Consistency = gocql.Quorum
   cluster.ProtoVersion = 4
