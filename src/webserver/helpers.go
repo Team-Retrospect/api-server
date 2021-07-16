@@ -13,9 +13,9 @@ import (
 
 func format_spans(blob []byte) []*structs.CassandraSpan {
   // initializing an array of SpanStructInput objects
-  var jspans []*SpanStructInput
+  var jspans []*structs.SpanStructInput
   json.Unmarshal(blob, &jspans)
-  cspans := make([]*CassandraSpan, len(jspans))
+  cspans := make([]*structs.CassandraSpan, len(jspans))
 
   for _, e := range jspans {
     if e == nil { continue }
@@ -46,7 +46,7 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
     }
     tags = tags[0:len(tags)-2] + "}"
 
-    cspans = append(cspans, &CassandraSpan{
+    cspans = append(cspans, &structs.CassandraSpan{
       Trace_id:      e.Trace_id,
       Span_id:       e.Span_id,
       Time_sent:     e.Time_sent,
@@ -64,12 +64,12 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
 }
 
 // internal method used to fix frontend session values in db spans
-func get_span_by_trace(traceId string) *CassandraSpan {
+func get_span_by_trace(traceId string) *structs.CassandraSpan {
   query := fmt.Sprintf("SELECT JSON chapter_id, user_id, session_id, trigger_route FROM project.spans WHERE trace_id='%s' LIMIT 1;", traceId)
 
   j := enumerate_query(query)
 
-  var cspan *CassandraSpan
+  var cspan *structs.CassandraSpan
   json.Unmarshal([]byte(j[0]), &cspan)
 
   return cspan
