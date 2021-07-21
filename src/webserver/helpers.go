@@ -75,32 +75,16 @@ func get_span_by_trace(traceId string) *structs.CassandraSpan {
   return cspan
 }
 
-func insert_events(w http.ResponseWriter, r *http.Request) {
-  body, _ := io.ReadAll(r.Body)
-  cevents := format_events(body, r)
-
-  for _, event := range(cevents) {
-    if event == nil { continue }
-    j, _ := json.Marshal(event)
-
-    query := "INSERT INTO project.events JSON '" + string(j) + "';"
-    session.Query(query).Exec()
-  }
-
-  w.WriteHeader(http.StatusOK)
-}
-
-func format_events(blob []byte, r *http.Request) []*structs.CassandraEvent {
+func format_event(blob []byte, r *http.Request) *structs.CassandraEvent {
   // convert them into cassandra-compatible structs
-  cevents := make([]*structs.CassandraEvent, 1)
 
-    cevents = append(cevents, &structs.CassandraEvent{
-      User_id:            r.Header.Get("user-id"),
-      Session_id:         r.Header.Get("session-id"),
-      Chapter_id:         r.Header.Get("chapter-id"),
-      Body: string(blob),
-    })
-  return cevents
+  cevent := &structs.CassandraEvent{
+    User_id:      r.Header.Get("user-id"),
+    Session_id:   r.Header.Get("session-id"),
+    Chapter_id:   r.Header.Get("chapter-id"),
+    Body:         strings.Replace(fmt.Sprint(string(blob)), "'", "\\'", -1),
+  }
+  return cevent
 }
 
 func enumerate_query(query string) (sa []string) {

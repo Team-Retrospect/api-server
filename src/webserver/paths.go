@@ -110,6 +110,19 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
 }
 
+// --> POST /events
+func insert_events(w http.ResponseWriter, r *http.Request) {
+  body, _ := io.ReadAll(r.Body)
+  cevent := format_event(body, r)
+  if cevent == nil { return }
+
+  j, _ := json.Marshal(cevent)
+  query := "INSERT INTO project.events JSON '" + string(j) + "';"
+  session.Query(query).Exec()
+
+  w.WriteHeader(http.StatusOK)
+}
+
 // --> GET /trigger_routes
 func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON trigger_route, data FROM project.spans;"
