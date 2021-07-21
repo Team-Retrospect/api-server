@@ -35,6 +35,9 @@ func DeclareRouter(cfg structs.Config, dbSession *gocql.Session) {
   r.Path("/trace_ids_by_trigger").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(get_all_trace_ids_by_trigger)
   r.Path("/chapter_ids_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_session)
   r.Path("/chapter_ids_by_trigger").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(get_all_chapter_ids_by_trigger)
+  r.Path("/events/snapshots").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_snapshots)
+  r.Path("/events/snapshots").Methods(http.MethodPost, http.MethodOptions).HandlerFunc(insert_snapshots)
+
   http.Handle("/", r)
 
   header := handlers.AllowedHeaders([]string{"Accept", "Content-Length", "Accept-Encoding", "Authorization", "X-CSRF-Token", "User-Id", "Session-Id", "Chapter-Id", "X-Requested-With", "Content-Type", "Authorization"})

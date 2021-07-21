@@ -6,7 +6,6 @@ import (
   "strings"
   "net/http"
   "encoding/json"
-  "io"
 
   "github.com/Team-Textrix/cassandra-connector/src/structs"
 )
@@ -85,6 +84,14 @@ func format_event(blob []byte, r *http.Request) *structs.CassandraEvent {
     Body:         strings.Replace(fmt.Sprint(string(blob)), "'", "\\'", -1),
   }
   return cevent
+}
+
+func format_snapshot(blob []byte, r *http.Request) *structs.Snapshot {
+  snapshot := &structs.Snapshot{
+    Session_id:   r.Header.Get("session-id"),
+    Body: blob,
+  }
+  return snapshot
 }
 
 func enumerate_query(query string) (sa []string) {

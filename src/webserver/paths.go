@@ -123,6 +123,31 @@ func insert_events(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
 }
 
+// --> GET /events/snapshots
+func get_snapshots(w http.ResponseWriter, r *http.Request) {
+  query := "SELECT JSON * FROM project.snapshots;"
+
+  j := enumerate_query(query)
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
+// --> POST /events/snapshots
+func insert_snapshots(w http.ResponseWriter, r *http.Request) {
+  body, _ := io.ReadAll(r.Body)
+  snapshot := format_snapshot(body, r)
+  if snapshot == nil { return }
+
+  j, _ := json.Marshal(snapshot)
+  query := "INSERT INTO project.snapshots JSON '" + string(j) + "';"
+  fmt.Println(query)
+  session.Query(query).Exec()
+
+  w.WriteHeader(http.StatusOK)
+}
+
 // --> GET /trigger_routes
 func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON trigger_route, data FROM project.spans;"
