@@ -1,12 +1,13 @@
 package webserver
 
 import (
-  "fmt"
-  "strings"
-  "net/http"
-  "github.com/gorilla/mux"
-  "encoding/json"
-  "io"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 // --> GET /spans
@@ -48,6 +49,24 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE chapter_id='%s';", chapter_id);
+
+  j := enumerate_query(query)
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
+// --> GET /spans_by_session/{id}
+func get_all_spans_by_session(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r);
+  session_id, ok := vars["id"]
+
+  if !ok {
+    fmt.Println("session_id is missing in parameters")
+  }
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE session_id='%s';", session_id);
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))

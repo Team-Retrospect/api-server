@@ -1,16 +1,16 @@
 package webserver
 
 import (
-  "fmt"
-  "net/http"
-  "log"
+	"fmt"
+	"log"
+	"net/http"
 
-  "github.com/gocql/gocql"
+	"github.com/gocql/gocql"
 
-  "github.com/gorilla/handlers"
-  "github.com/gorilla/mux"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 
-  "github.com/Team-Textrix/cassandra-connector/src/structs"
+	"github.com/Team-Textrix/cassandra-connector/src/structs"
 )
 
 // initialze a database session variable
@@ -25,6 +25,7 @@ func DeclareRouter(cfg structs.Config, dbSession *gocql.Session) {
   r.Path("/spans").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans)
   r.Path("/spans_by_trace/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_trace)
   r.Path("/spans_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_chapter)
+  r.Path("/spans_by_session/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_spans_by_session)
   r.Path("/events").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events)
   r.Path("/events_by_chapter/{id}").Methods(http.MethodGet, http.MethodOptions).HandlerFunc(get_all_events_by_chapter)
   r.Path("/span_search").Queries("trace_id", "{trace_id:[\\w\\-]*?}", "user_id", "{user_id:[\\w\\-]*?}", "session_id", "{session_id:[\\w\\-]*?}", "chapter_id", "{chapter_id:[\\w\\-]*?}", "status_code", "{status_code:[0-9]*?}").HandlerFunc(span_search_handler)
