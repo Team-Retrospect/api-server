@@ -30,6 +30,7 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
       tId := e.Trace_id
 
       oneSpan := get_span_by_trace(tId)
+      if oneSpan == nil { continue }
 
       e.Tags["frontendChapter"] = oneSpan.Chapter_id
       e.Tags["frontendSession"] = oneSpan.Session_id
@@ -72,7 +73,7 @@ func get_span_by_trace(traceId string) *structs.CassandraSpan {
   j := enumerate_query(query)
 
   var cspan *structs.CassandraSpan
-  json.Unmarshal([]byte(j[0]), &cspan)
+  if len(j) > 0 { json.Unmarshal([]byte(j[0]), &cspan) }
 
   return cspan
 }
