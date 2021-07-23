@@ -39,11 +39,14 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
 
     delete(e.Tags, "requestData")
 
-    tags := "{"
-    for k, v := range e.Tags {
-      tags += fmt.Sprintf(`"%s": "%s", `, k, v)
+    tags := "{}"
+    if len(e.tags) > 0 {
+      tags = "{"
+      for k, v := range e.Tags {
+        tags += fmt.Sprintf(`"%s": "%s", `, k, v)
+      }
+      tags = tags[0:len(tags)-2] + "}"
     }
-    tags = tags[0:len(tags)-2] + "}"
 
     cspans = append(cspans, &structs.CassandraSpan{
       Trace_id:      e.Trace_id,
