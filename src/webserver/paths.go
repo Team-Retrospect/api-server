@@ -66,7 +66,7 @@ func get_all_spans_by_session(w http.ResponseWriter, r *http.Request) {
     fmt.Println("session_id is missing in parameters")
   }
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE session_id='%s';", session_id);
+  query := fmt.Sprintf("SELECT JSON * FROM retrospect.spans WHERE session_id='%s';", session_id);
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -113,7 +113,7 @@ func get_all_events_by_session(w http.ResponseWriter, r *http.Request) {
     fmt.Println("session_id is missing in parameters")
   }
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.events WHERE session_id='%s';", session_id);
+  query := fmt.Sprintf("SELECT JSON * FROM retrospect.events WHERE session_id='%s';", session_id);
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -179,7 +179,7 @@ func get_all_snapshots_by_session(w http.ResponseWriter, r *http.Request) {
     fmt.Println("session_id is missing in parameters")
   }
 
-  query := fmt.Sprintf("SELECT JSON * FROM project.snapshots WHERE session_id='%s';", session_id);
+  query := fmt.Sprintf("SELECT JSON * FROM retrospect.snapshots WHERE session_id='%s';", session_id);
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
