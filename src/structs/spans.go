@@ -17,7 +17,7 @@ type CassandraSpan struct {
   Span_id           string        `json:"span_id"`
   Time_sent         int           `json:"time_sent"`
   Duration          string        `json:"time_duration"`
-  Data              string        `json:"data"`
+  Data              []byte        `json:"data"`
 
   // derived from tags
   Trigger_route     string        `json:"trigger_route"`
@@ -25,5 +25,5 @@ type CassandraSpan struct {
   Session_id        string        `json:"session_id"`
   Chapter_id        string        `json:"chapter_id"`
   Status_code       int16         `json:"status_code"`
-  Request_data      string        `json:"request_data"`
+  Request_data      []byte        `json:"request_data"`
 }
