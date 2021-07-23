@@ -3,7 +3,7 @@ package webserver
 import (
   "strconv"
   "fmt"
-  "strings"
+  // "strings"
   "net/http"
   "encoding/json"
 
@@ -21,7 +21,7 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
     if e.Tags["http.method"] == "OPTIONS" { continue }
 
     sc, _ := strconv.ParseInt(e.Tags["http.status_code"], 10, 64)
-    rd := e.Tags["requestData"]
+    rd := []byte(e.Tags["requestData"])
 
     // if it's a db span, add frontend session info
     _, ok := e.Tags["db.system"]
@@ -48,19 +48,21 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
       }
       tags = tags[0:len(tags)-2] + "}"
     }
+    blob, _ := json.Marshal(tags)
 
     cspans = append(cspans, &structs.CassandraSpan{
-      Trace_id:      e.Trace_id,
-      Span_id:       e.Span_id,
-      Time_sent:     e.Time_sent,
-      Duration:      strconv.Itoa(e.Duration) + "us",
-      Session_id:    e.Tags["frontendSession"],
-      User_id:       e.Tags["frontendUser"],
-      Chapter_id:    e.Tags["frontendChapter"],
-      Trigger_route: e.Tags["triggerRoute"],
-      Request_data:  rd,
-      Status_code:   int16(sc),
-      Data: strings.Replace(fmt.Sprint(tags), "'", "\\'", -1),
+      Trace_id:       e.Trace_id,
+      Span_id:        e.Span_id,
+      Time_sent:      e.Time_sent,
+      Duration:       strconv.Itoa(e.Duration) + "us",
+      Session_id:     e.Tags["frontendSession"],
+      User_id:        e.Tags["frontendUser"],
+      Chapter_id:     e.Tags["frontendChapter"],
+      Trigger_route:  e.Tags["triggerRoute"],
+      Request_data:   rd,
+      Status_code:    int16(sc),
+      Data:           blob,
+      // Data: strings.Replace(fmt.Sprint(tags), "'", "\\'", -1),
     })
   }
   return cspans
@@ -85,7 +87,8 @@ func format_event(blob []byte, r *http.Request) *structs.CassandraEvent {
     User_id:      r.Header.Get("user-id"),
     Session_id:   r.Header.Get("session-id"),
     Chapter_id:   r.Header.Get("chapter-id"),
-    Body:         strings.Replace(fmt.Sprint(string(blob)), "'", "\\'", -1),
+    // Body:         strings.Replace(fmt.Sprint(string(blob)), "'", "\\'", -1),
+    Body:         blob,
   }
   return cevent
 }
