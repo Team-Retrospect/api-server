@@ -16,7 +16,7 @@ data            text,
 request_data    text,
 time_duration   duration,
 
-PRIMARY KEY(span_id, time_sent)
+PRIMARY KEY(span_id, session_id, time_sent)
 ) WITH CLUSTERING ORDER BY (time_sent DESC);
 
 CREATE INDEX ON project.spans (trace_id);
@@ -33,8 +33,17 @@ user_id         text,
 chapter_id      text,
 data            text,
 
-PRIMARY KEY(data)
+PRIMARY KEY(data, session_id)
 );
 CREATE INDEX ON project.events (session_id);
 CREATE INDEX ON project.events (user_id);
 CREATE INDEX ON project.events (chapter_id);
+
+-- Full dom snapshots
+CREATE TABLE IF NOT EXISTS project.snapshots (
+session_id      text,
+data            ascii,
+
+PRIMARY KEY(data, session_id)
+);
+CREATE INDEX ON project.snapshots (session_id);
