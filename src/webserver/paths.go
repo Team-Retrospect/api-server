@@ -1,12 +1,13 @@
 package webserver
 
 import (
-  "fmt"
-  "strings"
-  "net/http"
-  "github.com/gorilla/mux"
-  "encoding/json"
-  "io"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 // --> GET /spans
@@ -56,6 +57,24 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// --> GET /spans_by_session/{id}
+func get_all_spans_by_session(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r);
+  session_id, ok := vars["id"]
+
+  if !ok {
+    fmt.Println("session_id is missing in parameters")
+  }
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.spans WHERE session_id='%s';", session_id);
+
+  j := enumerate_query(query)
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
 // --> GET /events
 func get_all_events(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON * FROM retrospect.events;"
@@ -77,6 +96,24 @@ func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM retrospect.events WHERE chapter_id='%s';", chapter_id);
+
+  j := enumerate_query(query)
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
+// --> GET /events_by_session/{id}
+func get_all_events_by_session(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r);
+  session_id, ok := vars["id"]
+
+  if !ok {
+    fmt.Println("session_id is missing in parameters")
+  }
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.events WHERE session_id='%s';", session_id);
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -133,15 +170,33 @@ func get_snapshots(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, js)
 }
 
+// --> GET /events/snapshots_by_session/{id}
+func get_all_snapshots_by_session(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r);
+  session_id, ok := vars["id"]
+
+  if !ok {
+    fmt.Println("session_id is missing in parameters")
+  }
+
+  query := fmt.Sprintf("SELECT JSON * FROM project.snapshots WHERE session_id='%s';", session_id);
+
+  j := enumerate_query(query)
+  js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
+
+  w.Header().Set("Content-Type", "application/json")
+  fmt.Fprintf(w, js)
+}
+
 // --> POST /events/snapshots
 func insert_snapshots(w http.ResponseWriter, r *http.Request) {
+  fmt.Println("Inserting a snapshot")
   body, _ := io.ReadAll(r.Body)
   snapshot := format_snapshot(body, r)
   if snapshot == nil { return }
 
   j, _ := json.Marshal(snapshot)
   query := "INSERT INTO retrospect.snapshots JSON '" + string(j) + "';"
-  fmt.Println(query)
   session.Query(query).Exec()
 
   w.WriteHeader(http.StatusOK)
@@ -150,7 +205,6 @@ func insert_snapshots(w http.ResponseWriter, r *http.Request) {
 // --> GET /trigger_routes
 func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON trigger_route, data FROM retrospect.spans;"
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -165,7 +219,6 @@ func get_all_trace_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   trigger_route := string(body)
 
   query := fmt.Sprintf("SELECT trace_id FROM retrospect.spans WHERE trigger_route='%s' ALLOW FILTERING;", trigger_route);
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
@@ -185,7 +238,6 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON chapter_id FROM retrospect.spans WHERE session_id='%s';", session_id);
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -200,7 +252,6 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   target := string(body)
 
   query := fmt.Sprintf("SELECT chapter_id FROM retrospect.spans WHERE trigger_route='%v' ALLOW FILTERING;", target);
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
@@ -233,14 +284,12 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   }
 
   dynamicQueryString := strings.Join(dynamicQuery," AND ")
-  fmt.Println(dynamicQueryString)
 
   if len(dynamicQueryString) != 0 {
     dynamicQueryString = "WHERE " + dynamicQueryString + " ALLOW FILTERING"
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM retrospect.spans " + dynamicQueryString + ";")
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -271,7 +320,6 @@ func event_search_handler(w http.ResponseWriter, r *http.Request) {
   }
 
   dynamicQueryString := strings.Join(dynamicQuery," AND ")
-  fmt.Println(dynamicQueryString)
 
   if len(dynamicQueryString) != 0 {
     dynamicQueryString = "WHERE " + dynamicQueryString + " ALLOW FILTERING"
