@@ -84,7 +84,6 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
 
   w.Header().Set("Content-Type", "application/json")
   fmt.Fprintf(w, js)
-  fmt.Println("Retrieved events", js)
 }
 
 // --> GET /events_by_chapter/{id}
@@ -191,13 +190,13 @@ func get_all_snapshots_by_session(w http.ResponseWriter, r *http.Request) {
 
 // --> POST /events/snapshots
 func insert_snapshots(w http.ResponseWriter, r *http.Request) {
+  fmt.Println("Inserting a snapshot")
   body, _ := io.ReadAll(r.Body)
   snapshot := format_snapshot(body, r)
   if snapshot == nil { return }
 
   j, _ := json.Marshal(snapshot)
   query := "INSERT INTO project.snapshots JSON '" + string(j) + "';"
-  fmt.Println(query)
   session.Query(query).Exec()
 
   w.WriteHeader(http.StatusOK)
@@ -206,7 +205,6 @@ func insert_snapshots(w http.ResponseWriter, r *http.Request) {
 // --> GET /trigger_routes
 func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   query := "SELECT JSON trigger_route, data FROM project.spans;"
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -221,7 +219,6 @@ func get_all_trace_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   trigger_route := string(body)
 
   query := fmt.Sprintf("SELECT trace_id FROM project.spans WHERE trigger_route='%s' ALLOW FILTERING;", trigger_route);
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
@@ -241,7 +238,6 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   }
 
   query := fmt.Sprintf("SELECT JSON chapter_id FROM project.spans WHERE session_id='%s';", session_id);
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -256,7 +252,6 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   target := string(body)
 
   query := fmt.Sprintf("SELECT chapter_id FROM project.spans WHERE trigger_route='%v' ALLOW FILTERING;", target);
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
@@ -289,14 +284,12 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   }
 
   dynamicQueryString := strings.Join(dynamicQuery," AND ")
-  fmt.Println(dynamicQueryString)
 
   if len(dynamicQueryString) != 0 {
     dynamicQueryString = "WHERE " + dynamicQueryString + " ALLOW FILTERING"
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM project.spans " + dynamicQueryString + ";")
-  fmt.Println(query)
 
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
@@ -327,7 +320,6 @@ func event_search_handler(w http.ResponseWriter, r *http.Request) {
   }
 
   dynamicQueryString := strings.Join(dynamicQuery," AND ")
-  fmt.Println(dynamicQueryString)
 
   if len(dynamicQueryString) != 0 {
     dynamicQueryString = "WHERE " + dynamicQueryString + " ALLOW FILTERING"
