@@ -40,7 +40,7 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
     delete(e.Tags, "requestData")
 
     tags := "{}"
-    if len(e.tags) > 0 {
+    if len(e.Tags) > 0 {
       tags = "{"
       for k, v := range e.Tags {
         tags += fmt.Sprintf(`"%s": "%s", `, k, v)
