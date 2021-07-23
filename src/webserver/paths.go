@@ -65,7 +65,6 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
 
   w.Header().Set("Content-Type", "application/json")
   fmt.Fprintf(w, js)
-  fmt.Println("Retrieved events", js)
 }
 
 // --> GET /events_by_chapter/{id}
