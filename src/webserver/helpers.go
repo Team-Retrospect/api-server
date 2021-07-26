@@ -3,6 +3,7 @@ package webserver
 import (
   "strconv"
   "fmt"
+  "time"
   // "strings"
   "net/http"
   "encoding/json"
@@ -24,19 +25,22 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
     rd := []byte(e.Tags["requestData"])
 
     // if it's a db span, add frontend session info
-    // _, ok := e.Tags["db.system"]
-    // if ok {
-    //   // get trace id
-    //   tId := e.Trace_id
+    _, ok := e.Tags["db.system"]
+    if ok {
+      time.AfterFunc(5*time.Second, func() {
+        // nothing
+      })
+      // get trace id
+      tId := e.Trace_id
 
-    //   oneSpan := get_span_by_trace(tId)
-    //   if oneSpan == nil { continue }
+      oneSpan := get_span_by_trace(tId)
+      if oneSpan == nil { continue }
 
-    //   e.Tags["frontendChapter"] = oneSpan.Chapter_id
-    //   e.Tags["frontendSession"] = oneSpan.Session_id
-    //   e.Tags["frontendUser"] = oneSpan.User_id
-    //   e.Tags["triggerRoute"] = oneSpan.Trigger_route
-    // }
+      e.Tags["frontendChapter"] = oneSpan.Chapter_id
+      e.Tags["frontendSession"] = oneSpan.Session_id
+      e.Tags["frontendUser"] = oneSpan.User_id
+      e.Tags["triggerRoute"] = oneSpan.Trigger_route
+    }
 
     delete(e.Tags, "requestData")
 
