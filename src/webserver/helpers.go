@@ -52,21 +52,38 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
     }
     blob, _ := json.Marshal(tags)
 
-    cspans = append(cspans, &structs.CassandraSpan{
-      Trace_id:       e.Trace_id,
-      Span_id:        e.Span_id,
-      Time_sent:      e.Time_sent,
-      Duration:       strconv.Itoa(e.Duration) + "us",
-      Session_id:     e.Tags["frontendSession"],
-      User_id:        e.Tags["frontendUser"],
-      Chapter_id:     e.Tags["frontendChapter"],
-      Trigger_route:  e.Tags["triggerRoute"],
-      Request_data:   rd,
-      Status_code:    int16(sc),
-      Data:           blob,
-      Is_db:          is_db,
-      // Data: strings.Replace(fmt.Sprint(tags), "'", "\\'", -1),
-    })
+    if is_db {
+      cspans = append(cspans, &structs.CassandraSpan{
+        Trace_id:       e.Trace_id,
+        Span_id:        e.Span_id,
+        Time_sent:      e.Time_sent,
+        Duration:       strconv.Itoa(e.Duration) + "us",
+        Session_id:     "",
+        User_id:        "",
+        Chapter_id:     "",
+        Trigger_route:  "",
+        Request_data:   rd,
+        Status_code:    int16(sc),
+        Data:           blob,
+        Is_db:          is_db,
+      })
+    } else {
+      cspans = append(cspans, &structs.CassandraSpan{
+        Trace_id:       e.Trace_id,
+        Span_id:        e.Span_id,
+        Time_sent:      e.Time_sent,
+        Duration:       strconv.Itoa(e.Duration) + "us",
+        Session_id:     e.Tags["frontendSession"],
+        User_id:        e.Tags["frontendUser"],
+        Chapter_id:     e.Tags["frontendChapter"],
+        Trigger_route:  e.Tags["triggerRoute"],
+        Request_data:   rd,
+        Status_code:    int16(sc),
+        Data:           blob,
+        Is_db:          is_db,
+      })
+    }
+
   }
   return cspans
 }
