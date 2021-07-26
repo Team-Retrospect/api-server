@@ -138,8 +138,11 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
     // json.Marshal returns the json encoding of the variable passed into it
     j, _ := json.Marshal(span)
 
+    table := "spans"
+    if span.Is_db { table = "db_span_buffer" }
+
     // each json-ified span is stringified and inserted into the database as a json object
-    query := "INSERT INTO retrospect.spans JSON '" + string(j) + "';"
+    query := "INSERT INTO retrospect." + (table) + " JSON '" + string(j) + "';"
     session.Query(query).Exec()
   }
 

@@ -26,4 +26,6 @@ type CassandraSpan struct {
   Chapter_id        string        `json:"chapter_id"`
   Status_code       int16         `json:"status_code"`
   Request_data      []byte        `json:"request_data"`
+
+  Is_db             bool
 }
