@@ -139,10 +139,11 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
     j, _ := json.Marshal(span)
 
     table := "spans"
-    if span.Is_db { table = "db_span_buffer" }
+    if span.Session_id == "" { table = "db_span_buffer" }
 
     // each json-ified span is stringified and inserted into the database as a json object
     query := "INSERT INTO retrospect." + (table) + " JSON '" + string(j) + "';"
+    fmt.Println(query)
     session.Query(query).Exec()
   }
 

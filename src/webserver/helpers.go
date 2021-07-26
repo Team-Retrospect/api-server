@@ -13,9 +13,11 @@ import (
 
 func format_spans(blob []byte) []*structs.CassandraSpan {
   // initializing an array of SpanStructInput objects
+  fmt.Println(string(blob))
   var jspans []*structs.SpanStructInput
   json.Unmarshal(blob, &jspans)
   cspans := make([]*structs.CassandraSpan, len(jspans))
+  fmt.Println("cspans len:", len(cspans))
 
   for _, e := range jspans {
     if e == nil { continue }
@@ -65,7 +67,6 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
         Request_data:   rd,
         Status_code:    int16(sc),
         Data:           blob,
-        Is_db:          is_db,
       })
     } else {
       cspans = append(cspans, &structs.CassandraSpan{
@@ -80,7 +81,6 @@ func format_spans(blob []byte) []*structs.CassandraSpan {
         Request_data:   rd,
         Status_code:    int16(sc),
         Data:           blob,
-        Is_db:          is_db,
       })
     }
 
