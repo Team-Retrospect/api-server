@@ -17,8 +17,7 @@ func get_all_spans(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /spans_by_trace/{id}
@@ -35,8 +34,7 @@ func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /spans_by_chapter/{id}
@@ -53,8 +51,7 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /spans_by_session/{id}
@@ -71,8 +68,7 @@ func get_all_spans_by_session(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /events
@@ -82,8 +78,7 @@ func get_all_events(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /events_by_chapter/{id}
@@ -100,8 +95,7 @@ func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /events_by_session/{id}
@@ -118,8 +112,7 @@ func get_all_events_by_session(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> POST /spans
@@ -170,8 +163,7 @@ func get_snapshots(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /events/snapshots_by_session/{id}
@@ -188,8 +180,7 @@ func get_all_snapshots_by_session(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> POST /events/snapshots
@@ -213,8 +204,7 @@ func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /trace_ids_by_trigger
@@ -227,8 +217,7 @@ func get_all_trace_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /chapters_by_session/{id}
@@ -246,8 +235,7 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET /chapter_ids_by_trigger
@@ -260,8 +248,7 @@ func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[\"%s\"]", strings.Join(j, "\", \""))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET? /span_search
@@ -298,8 +285,7 @@ func span_search_handler(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
 
 // --> GET? /event_search
@@ -334,6 +320,5 @@ func event_search_handler(w http.ResponseWriter, r *http.Request) {
   j := enumerate_query(query)
   js := fmt.Sprintf("[%s]", strings.Join(j, ", "))
 
-  w.Header().Set("Content-Type", "application/json")
-  fmt.Fprintf(w, js)
+  send_json_response(w, js)
 }
