@@ -26,7 +26,8 @@ func get_all_spans_by_trace(w http.ResponseWriter, r *http.Request) {
   trace_id, ok := vars["id"]
 
   if !ok {
-    fmt.Println("trace_id is missing in parameters")
+    send_incorrect_params(w)
+    return
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM retrospect.spans WHERE trace_id='%s';", trace_id);
@@ -43,7 +44,8 @@ func get_all_spans_by_chapter(w http.ResponseWriter, r *http.Request) {
   chapter_id, ok := vars["id"]
 
   if !ok {
-    fmt.Println("chapter_id is missing in parameters")
+    send_incorrect_params(w)
+    return
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM retrospect.spans WHERE chapter_id='%s';", chapter_id);
@@ -60,7 +62,8 @@ func get_all_spans_by_session(w http.ResponseWriter, r *http.Request) {
   session_id, ok := vars["id"]
 
   if !ok {
-    fmt.Println("session_id is missing in parameters")
+    send_incorrect_params(w)
+    return
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM retrospect.spans WHERE session_id='%s';", session_id);
@@ -87,7 +90,8 @@ func get_all_events_by_chapter(w http.ResponseWriter, r *http.Request) {
   chapter_id, ok := vars["id"]
 
   if !ok {
-    fmt.Println("chapter_id is missing in parameters")
+    send_incorrect_params(w)
+    return
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM retrospect.events WHERE chapter_id='%s';", chapter_id);
@@ -104,7 +108,8 @@ func get_all_events_by_session(w http.ResponseWriter, r *http.Request) {
   session_id, ok := vars["id"]
 
   if !ok {
-    fmt.Println("session_id is missing in parameters")
+    send_incorrect_params(w)
+    return
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM retrospect.events WHERE session_id='%s';", session_id);
@@ -120,7 +125,14 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
   fmt.Println("Inserting a Span")
   // r.Body is type *http.bodyblob
   // io.ReadAll returns an array of bytes
-  body, _ := io.ReadAll(r.Body)
+  body, err := io.ReadAll(r.Body)
+  if err != nil {
+    send_incorrect_params(w)
+    return
+  } else if len(body) == 0 {
+    send_missing_body(w)
+    return
+  }
 
   // format_spans takes an array of bytes
   // and returns an array of structs.CassandraSpan objects
@@ -140,12 +152,21 @@ func insert_spans(w http.ResponseWriter, r *http.Request) {
     session.Query(query).Exec()
   }
 
-  w.WriteHeader(http.StatusOK)
+  send_creation_success(w)
 }
 
 // --> POST /events
 func insert_events(w http.ResponseWriter, r *http.Request) {
-  body, _ := io.ReadAll(r.Body)
+  body, err := io.ReadAll(r.Body)
+
+  if err != nil {
+    send_incorrect_params(w)
+    return
+  } else if len(body) == 0 {
+    send_missing_body(w)
+    return
+  }
+
   cevent := format_event(body, r)
   if cevent == nil { return }
 
@@ -153,7 +174,7 @@ func insert_events(w http.ResponseWriter, r *http.Request) {
   query := "INSERT INTO retrospect.events JSON '" + string(j) + "';"
   session.Query(query).Exec()
 
-  w.WriteHeader(http.StatusOK)
+  send_creation_success(w)
 }
 
 // --> GET /events/snapshots
@@ -172,7 +193,8 @@ func get_all_snapshots_by_session(w http.ResponseWriter, r *http.Request) {
   session_id, ok := vars["id"]
 
   if !ok {
-    fmt.Println("session_id is missing in parameters")
+    send_incorrect_params(w)
+    return
   }
 
   query := fmt.Sprintf("SELECT JSON * FROM retrospect.snapshots WHERE session_id='%s';", session_id);
@@ -194,7 +216,7 @@ func insert_snapshots(w http.ResponseWriter, r *http.Request) {
   query := "INSERT INTO retrospect.snapshots JSON '" + string(j) + "';"
   session.Query(query).Exec()
 
-  w.WriteHeader(http.StatusOK)
+  send_creation_success(w)
 }
 
 // --> GET /trigger_routes
@@ -209,7 +231,16 @@ func get_all_trigger_routes(w http.ResponseWriter, r *http.Request) {
 
 // --> GET /trace_ids_by_trigger
 func get_all_trace_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
-  body, _ := io.ReadAll(r.Body)
+  body, err := io.ReadAll(r.Body)
+
+  if err != nil {
+    send_incorrect_params(w)
+    return
+  } else if len(body) == 0 {
+    send_missing_body(w)
+    return
+  }
+
   trigger_route := string(body)
 
   query := fmt.Sprintf("SELECT trace_id FROM retrospect.spans WHERE trigger_route='%s' ALLOW FILTERING;", trigger_route);
@@ -226,8 +257,8 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
   session_id, ok := vars["id"]
 
   if !ok {
-    fmt.Println("session_id is missing in parameters")
-    // TODO: return this as error
+    send_incorrect_params(w)
+    return
   }
 
   query := fmt.Sprintf("SELECT JSON chapter_id FROM retrospect.spans WHERE session_id='%s';", session_id);
@@ -240,7 +271,16 @@ func get_all_chapter_ids_by_session(w http.ResponseWriter, r *http.Request) {
 
 // --> GET /chapter_ids_by_trigger
 func get_all_chapter_ids_by_trigger(w http.ResponseWriter, r *http.Request) {
-  body, _ := io.ReadAll(r.Body)
+  body, err := io.ReadAll(r.Body)
+
+  if err != nil {
+    send_incorrect_params(w)
+    return
+  } else if len(body) == 0 {
+    send_missing_body(w)
+    return
+  }
+
   target := string(body)
 
   query := fmt.Sprintf("SELECT chapter_id FROM retrospect.spans WHERE trigger_route='%v' ALLOW FILTERING;", target);
