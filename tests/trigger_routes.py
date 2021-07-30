@@ -8,9 +8,9 @@ from helpers import *
 
 @pytest.fixture(autouse=True)
 def run_around_tests():
-    # (todo: use a cassandra driver to input this?)
-    requests.post(url('/events'), data=json.dumps(SAMPLE_TRACE), headers=HEADERS)
+    setup_insert_sample_trace()
     yield
+    teardown_delete_sample_trace()
 
 # -------------------------------------------------------------------- #
 

@@ -32,17 +32,18 @@ HEADERS = {
     "chapter-id"    : "some_chapter_uuid",
 }
 
-# setup:
 
 CLUSTER = Cluster([CONFIG['cluster']], port=9042)
 KEYSPACE = 'retrospect'
-INSERT_QUERY = "INSERT INTO {keyspace}.{table} JSON '{payload}';"
 SESSION = CLUSTER.connect(KEYSPACE, wait_for_all_pools=True)
 SESSION.execute(f'USE {KEYSPACE};')
 
+# setup:
+
+INSERT_QUERY = f"INSERT INTO {KEYSPACE}.{'{table}'} JSON '{'{payload}'}';"
+
 def setup_insert_sample_span():
     SESSION.execute(INSERT_QUERY.format(
-        keyspace=KEYSPACE,
         table='spans',
         payload=json.dumps({
             'span_id': IDS['span'],
@@ -56,7 +57,6 @@ def setup_insert_sample_span():
     ))
 def setup_insert_sample_trace():
     SESSION.execute(INSERT_QUERY.format(
-        keyspace=KEYSPACE,
         table='events',
         payload=json.dumps({
             'session_id': IDS['session'],
@@ -67,13 +67,29 @@ def setup_insert_sample_trace():
     ))
 def setup_insert_sample_snapshot():
     SESSION.execute(INSERT_QUERY.format(
-        keyspace=KEYSPACE,
         table='snapshots',
         payload=json.dumps({
             'session_id': IDS['session'],
             'data': IDS['data'],
             })
     ))
+
+# teardown:
+
+DELETE_QUERY = f"DELETE FROM {KEYSPACE}.{'{table}'} WHERE session_id='{IDS['session']}';"
+
+def teardown_delete_sample_span():
+    pass
+    # SESSION.execute(DELETE_QUERY.format(table='spans'))
+
+def teardown_delete_sample_trace():
+    pass
+    # SESSION.execute(DELETE_QUERY.format(table='traces'))
+
+def teardown_delete_sample_snapshot():
+    pass
+    # SESSION.execute(DELETE_QUERY.format(table='snapshots'))
+
 
 # Assertions:
 

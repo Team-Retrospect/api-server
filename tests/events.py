@@ -10,6 +10,7 @@ from helpers import *
 def run_around_tests():
     setup_insert_sample_trace()
     yield
+    teardown_delete_sample_trace()
 
 # -------------------------------------------------------------------- #
 
