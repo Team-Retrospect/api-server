@@ -40,7 +40,7 @@ SESSION.execute(f'USE {KEYSPACE};')
 
 # setup:
 
-INSERT_QUERY = f"INSERT INTO {KEYSPACE}.{'{table}'} JSON '{'{payload}'}';"
+INSERT_QUERY = f"INSERT INTO {'{table}'} JSON '{'{payload}'}';"
 
 def setup_insert_sample_span():
     SESSION.execute(INSERT_QUERY.format(
@@ -76,19 +76,14 @@ def setup_insert_sample_snapshot():
 
 # teardown:
 
-DELETE_QUERY = f"DELETE FROM {KEYSPACE}.{'{table}'} WHERE session_id='{IDS['session']}';"
-
 def teardown_delete_sample_span():
-    pass
-    # SESSION.execute(DELETE_QUERY.format(table='spans'))
+    SESSION.execute(f"DELETE FROM spans WHERE span_id='{IDS['span']}';")
 
 def teardown_delete_sample_trace():
-    pass
-    # SESSION.execute(DELETE_QUERY.format(table='traces'))
+    SESSION.execute(f"DELETE FROM events WHERE data='{IDS['data']}';")
 
 def teardown_delete_sample_snapshot():
-    pass
-    # SESSION.execute(DELETE_QUERY.format(table='snapshots'))
+    SESSION.execute(f"DELETE FROM snapshots WHERE data='{IDS['data']}';")
 
 
 # Assertions:
