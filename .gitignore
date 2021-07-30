@@ -3,3 +3,4 @@ config.yml
 ignore/*
 .DS_Store
 cassandra-connector
+__pycache__/
