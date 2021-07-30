@@ -16,6 +16,7 @@ IDS = {
     'trace'     : 'some_trace_uuid',
     'session'   : 'some_session_uuid',
     'chapter'   : 'some_chapter_uuid',
+    'trigger'   : 'get http://some_trigger_route.com/dashboard',
     'nonexist'  : 'this_should_not_exist',
 }
 HEADERS = {
@@ -37,12 +38,22 @@ def assert_is_json(r):
     try :
         j = r.json()
         assert True
-    except :
+    except json.decoder.JSONDecodeError :
         pytest.fail("doesn't parse by json")
 
+def assert_is_empty_array(r):
+    assert r.text == '[]', "returned nonempty array"
+
+def assert_contents_are_type(r, t):
+    try :
+        j = r.json()
+        assert type(j[0]) == t
+    except json.decoder.JSONDecodeError :
+        pytest.fail("doesn't parse by json")
+
+
 def assert_isnt_empty(r):
-    j = r.json()
-    assert len(j)
+    assert len(r.json())
 
 def assert_is_ok(r):
     assert r.ok, "returned error code"
