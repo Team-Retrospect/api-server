@@ -36,12 +36,13 @@ HEADERS = {
 
 CLUSTER = Cluster([CONFIG['cluster']], port=9042)
 KEYSPACE = 'retrospect'
-INSERT_QUERY = "INSERT INTO retrospect.{table} JSON '{payload}';"
+INSERT_QUERY = "INSERT INTO {keyspace}.{table} JSON '{payload}';"
 SESSION = CLUSTER.connect(KEYSPACE, wait_for_all_pools=True)
 SESSION.execute(f'USE {KEYSPACE};')
 
 def setup_insert_sample_span():
     SESSION.execute(INSERT_QUERY.format(
+        keyspace=KEYSPACE,
         table='spans',
         payload=json.dumps({
             'span_id': IDS['span'],
@@ -55,6 +56,7 @@ def setup_insert_sample_span():
     ))
 def setup_insert_sample_trace():
     SESSION.execute(INSERT_QUERY.format(
+        keyspace=KEYSPACE,
         table='events',
         payload=json.dumps({
             'session_id': IDS['session'],
@@ -65,6 +67,7 @@ def setup_insert_sample_trace():
     ))
 def setup_insert_sample_snapshot():
     SESSION.execute(INSERT_QUERY.format(
+        keyspace=KEYSPACE,
         table='snapshots',
         payload=json.dumps({
             'session_id': IDS['session'],
