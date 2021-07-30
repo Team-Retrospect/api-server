@@ -8,8 +8,7 @@ from helpers import *
 
 @pytest.fixture(autouse=True)
 def run_around_tests():
-    # (todo: use a cassandra driver to input this?)
-    requests.post(url('/spans'), data=json.dumps([SAMPLE_SPAN]))
+    setup_insert_sample_span()
     yield
 
 # -------------------------------------------------------------------- #

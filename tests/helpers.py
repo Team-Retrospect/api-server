@@ -1,4 +1,5 @@
 import pytest
+import requests
 import json
 
 HOST = "http://localhost:8081"
@@ -48,3 +49,15 @@ def assert_is_ok(r):
 
 def assert_is_not_ok(r):
     assert not r.ok, "returned success but shouldnt"
+
+# setup:
+
+def setup_insert_sample_span():
+    # (todo: use a cassandra driver to input this?)
+    requests.post(url('/spans'), data=json.dumps(SAMPLE_SPAN), headers=HEADERS)
+def setup_insert_sample_trace():
+    # (todo: use a cassandra driver to input this?)
+    requests.post(url('/events'), data=json.dumps(SAMPLE_TRACE), headers=HEADERS)
+def setup_insert_sample_snapshot():
+    # (todo: use a cassandra driver to input this?)
+    requests.post(url('/events'), data=json.dumps(SAMPLE_SNAPSHOT), headers=HEADERS)

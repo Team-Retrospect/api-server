@@ -8,7 +8,7 @@ from helpers import *
 
 @pytest.fixture(autouse=True)
 def run_around_tests():
-    requests.post(url('/events/snapshots'), data=json.dumps(SAMPLE_SNAPSHOT), headers=HEADERS)
+    setup_insert_sample_snapshot()
     yield
 
 # -------------------------------------------------------------------- #
