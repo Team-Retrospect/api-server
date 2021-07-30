@@ -8,6 +8,6 @@
   "time_duration": "136ms786us",
   "time_sent": 1625498729193189,
   "trace_id": "some_trace_uuid",
-  "trigger_route": "get http://localhost:3001/dashboard",
+  "trigger_route": "get http://some_trigger_route.com/dashboard",
   "user_id": "some_user_uuid"
 }
