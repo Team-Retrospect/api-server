@@ -57,16 +57,16 @@ def test_get_spans_by_trace_returns_array_when_id_does_not_exist():
     r = requests.get(url(f"/spans_by_trace/{IDS['nonexist']}"))
     assert_is_ok(r)
     assert_is_json_array(r)
-    assert r.text == '[]', "returned nonempty array"
+    assert_is_empty_array(r)
 
 def test_get_spans_by_chapter_returns_array_when_id_does_not_exist():
     r = requests.get(url(f"/spans_by_chapter/{IDS['nonexist']}"))
     assert_is_ok(r)
     assert_is_json_array(r)
-    assert r.text == '[]', "returned nonempty array"
+    assert_is_empty_array(r)
 
 def test_get_spans_by_session_returns_array_when_id_does_not_exist():
     r = requests.get(url(f"/spans_by_session/{IDS['nonexist']}"))
     assert_is_ok(r)
     assert_is_json_array(r)
-    assert r.text == '[]', "returned nonempty array"
+    assert_is_empty_array(r)
