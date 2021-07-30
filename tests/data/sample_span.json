@@ -1,0 +1,38 @@
+{
+  "duration": 136786,
+  "id": "some_span_uuid",
+  "kind": "TEST",
+  "localEndpoint": {
+    "serviceName": "testing_code"
+  },
+  "tags": {
+    "frontendChapter": "some_chapter_uuid",
+    "frontendSession": "some_session_uuid",
+    "frontendUser": "some_user_uuid",
+    "http.flavor": "1.1",
+    "http.host": "localhost:3000",
+    "http.method": "GET",
+    "http.route": "/movies",
+    "http.status_code": "200",
+    "http.status_text": "OK",
+    "http.target": "/movies",
+    "http.url": "http://localhost:3000/movies",
+    "http.user_agent": "node-fetch/1.0 (+https://github.com/bitinn/node-fetch)",
+    "name": "HTTP PUT",
+    "net.host.ip": "::ffff:127.0.0.1",
+    "net.host.name": "localhost",
+    "net.host.port": "3000",
+    "net.peer.ip": "::ffff:127.0.0.1",
+    "net.peer.port": "56289",
+    "net.transport": "IP.TCP",
+    "ot.status_code": "OK",
+    "requestData": "undefined",
+    "service.name": "movies-server",
+    "telemetry.sdk.language": "nodejs",
+    "telemetry.sdk.name": "opentelemetry",
+    "telemetry.sdk.version": "0.21.",
+    "triggerRoute": "get http://localhost:3001/dashboard"
+  },
+  "timestamp": 1625498729193189,
+  "traceId": "some_trace_uuid"
+}

@@ -1,0 +1,13 @@
+{
+  "chapter_id": "some_chapter_uuid",
+  "data": "InsiU2FtcGxlIjoiVGhpcyBpcyB0ZXN0In0i=",
+  "request_data": "dW5kZWZpbmVk",
+  "session_id": "some_session_uuid",
+  "span_id": "some_span_uuid",
+  "status_code": 200,
+  "time_duration": "136ms786us",
+  "time_sent": 1625498729193189,
+  "trace_id": "some_trace_uuid",
+  "trigger_route": "get http://localhost:3001/dashboard",
+  "user_id": "some_user_uuid"
+}
