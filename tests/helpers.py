@@ -2,11 +2,11 @@ import pytest
 import json
 
 HOST = "http://localhost:8081"
-with open('sample_span.json', 'r') as f :
+with open('./data/sample_span.json', 'r') as f :
     SAMPLE_SPAN = json.load(f)
-with open('sample_trace.json', 'r') as f :
+with open('./data/sample_trace.json', 'r') as f :
     SAMPLE_TRACE = json.load(f)
-with open('sample_snapshot.json', 'r') as f :
+with open('./data/sample_snapshot.json', 'r') as f :
     SAMPLE_SNAPSHOT = json.load(f)
 
 IDS = {
