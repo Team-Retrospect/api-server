@@ -29,8 +29,19 @@ HEADERS = {
     "chapter-id"    : "some_chapter_uuid",
 }
 
-def url(endpoint):
-    return HOST + PORT + endpoint
+# setup:
+
+def setup_insert_sample_span():
+    # (todo: use a cassandra driver to input this?)
+    requests.post(url('/spans'), data=json.dumps(SAMPLE_SPAN), headers=HEADERS)
+def setup_insert_sample_trace():
+    # (todo: use a cassandra driver to input this?)
+    requests.post(url('/events'), data=json.dumps(SAMPLE_TRACE), headers=HEADERS)
+def setup_insert_sample_snapshot():
+    # (todo: use a cassandra driver to input this?)
+    requests.post(url('/events'), data=json.dumps(SAMPLE_SNAPSHOT), headers=HEADERS)
+
+# Assertions:
 
 def assert_is_json_array(r):
     assert (r.text[0] == '[') and (r.text[-1] == ']'), "body isn't an array"
@@ -55,7 +66,6 @@ def assert_contents_are_type(r, t):
     except json.decoder.JSONDecodeError :
         pytest.fail("doesn't parse by json")
 
-
 def assert_isnt_empty(r):
     assert len(r.json())
 
@@ -65,14 +75,7 @@ def assert_is_ok(r):
 def assert_is_not_ok(r):
     assert not r.ok, "returned success but shouldnt"
 
-# setup:
+# others:
 
-def setup_insert_sample_span():
-    # (todo: use a cassandra driver to input this?)
-    requests.post(url('/spans'), data=json.dumps(SAMPLE_SPAN), headers=HEADERS)
-def setup_insert_sample_trace():
-    # (todo: use a cassandra driver to input this?)
-    requests.post(url('/events'), data=json.dumps(SAMPLE_TRACE), headers=HEADERS)
-def setup_insert_sample_snapshot():
-    # (todo: use a cassandra driver to input this?)
-    requests.post(url('/events'), data=json.dumps(SAMPLE_SNAPSHOT), headers=HEADERS)
+def url(endpoint):
+    return HOST + PORT + endpoint
