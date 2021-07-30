@@ -1,8 +1,12 @@
 import pytest
 import requests
 import json
+import yaml
 
-HOST = "http://localhost:8081"
+with open('./config.yml', 'r') as f:
+    CONFIG = yaml.load(f, Loader=yaml.FullLoader)
+    HOST = f"http{'s' if CONFIG['use_https'] else ''}://localhost"
+    PORT = CONFIG['port']
 with open('./tests/data/sample_span.json', 'r') as f :
     SAMPLE_SPAN = json.load(f)
 with open('./tests/data/sample_trace.json', 'r') as f :
@@ -26,7 +30,7 @@ HEADERS = {
 }
 
 def url(endpoint):
-    return HOST + endpoint
+    return HOST + PORT + endpoint
 
 def assert_is_json_array(r):
     assert (r.text[0] == '[') and (r.text[-1] == ']'), "body isn't an array"
@@ -47,7 +51,7 @@ def assert_is_empty_array(r):
 def assert_contents_are_type(r, t):
     try :
         j = r.json()
-        assert type(j[0]) == t
+        assert type(j[0]) == t, f"type is not {type(t)}"
     except json.decoder.JSONDecodeError :
         pytest.fail("doesn't parse by json")
 
