@@ -3,11 +3,11 @@ import requests
 import json
 
 HOST = "http://localhost:8081"
-with open('./data/sample_span.json', 'r') as f :
+with open('./tests/data/sample_span.json', 'r') as f :
     SAMPLE_SPAN = json.load(f)
-with open('./data/sample_trace.json', 'r') as f :
+with open('./tests/data/sample_trace.json', 'r') as f :
     SAMPLE_TRACE = json.load(f)
-with open('./data/sample_snapshot.json', 'r') as f :
+with open('./tests/data/sample_snapshot.json', 'r') as f :
     SAMPLE_SNAPSHOT = json.load(f)
 
 IDS = {
