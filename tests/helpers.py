@@ -1,6 +1,7 @@
+from cassandra.cluster import Cluster
+import json
 import pytest
 import requests
-import json
 import yaml
 
 with open('./config.yml', 'r') as f:
@@ -15,13 +16,15 @@ with open('./tests/data/sample_snapshot.json', 'r') as f :
     SAMPLE_SNAPSHOT = json.load(f)
 
 IDS = {
-    'user'      : 'some_user_uuid',
     'span'      : 'some_span_uuid',
     'trace'     : 'some_trace_uuid',
     'session'   : 'some_session_uuid',
+    'user'      : 'some_user_uuid',
     'chapter'   : 'some_chapter_uuid',
     'trigger'   : 'get http://some_trigger_route.com/dashboard',
     'nonexist'  : 'this_should_not_exist',
+    'data'      : 'InsiU2FtcGxlIjoiVGhpcyBpcyB0ZXN0In0i',
+    'time_sent' : 1,
 }
 HEADERS = {
     "user-id"       : "some_user_uuid",
@@ -31,15 +34,43 @@ HEADERS = {
 
 # setup:
 
+CLUSTER = Cluster([CONFIG['cluster']], port=9042)
+KEYSPACE = 'retrospect'
+INSERT_QUERY = "INSERT INTO retrospect.{table} JSON '{payload}';"
+SESSION = CLUSTER.connect(KEYSPACE, wait_for_all_pools=True)
+SESSION.execute(f'USE {KEYSPACE};')
+
 def setup_insert_sample_span():
-    # (todo: use a cassandra driver to input this?)
-    requests.post(url('/spans'), data=json.dumps(SAMPLE_SPAN), headers=HEADERS)
+    SESSION.execute(INSERT_QUERY.format(
+        table='spans',
+        payload=json.dumps({
+            'span_id': IDS['span'],
+            'trace_id': IDS['trace'],
+            'session_id': IDS['session'],
+            'user_id': IDS['user'],
+            'chapter_id': IDS['chapter'],
+            'trigger_route': IDS['trigger'],
+            'time_sent': 1,
+            })
+    ))
 def setup_insert_sample_trace():
-    # (todo: use a cassandra driver to input this?)
-    requests.post(url('/events'), data=json.dumps(SAMPLE_TRACE), headers=HEADERS)
+    SESSION.execute(INSERT_QUERY.format(
+        table='events',
+        payload=json.dumps({
+            'session_id': IDS['session'],
+            'user_id': IDS['user'],
+            'chapter_id': IDS['chapter'],
+            'data': IDS['data'],
+            })
+    ))
 def setup_insert_sample_snapshot():
-    # (todo: use a cassandra driver to input this?)
-    requests.post(url('/events'), data=json.dumps(SAMPLE_SNAPSHOT), headers=HEADERS)
+    SESSION.execute(INSERT_QUERY.format(
+        table='snapshots',
+        payload=json.dumps({
+            'session_id': IDS['session'],
+            'data': IDS['data'],
+            })
+    ))
 
 # Assertions:
 
