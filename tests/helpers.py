@@ -16,22 +16,21 @@ with open('./tests/data/sample_snapshot.json', 'r') as f :
     SAMPLE_SNAPSHOT = json.load(f)
 
 IDS = {
-    'span'      : 'some_span_uuid',
-    'trace'     : 'some_trace_uuid',
-    'session'   : 'some_session_uuid',
-    'user'      : 'some_user_uuid',
-    'chapter'   : 'some_chapter_uuid',
-    'trigger'   : 'get http://some_trigger_route.com/dashboard',
-    'nonexist'  : 'this_should_not_exist',
-    'data'      : 'InsiU2FtcGxlIjoiVGhpcyBpcyB0ZXN0In0i',
-    'time_sent' : 1,
+    'span'          : 'some_span_uuid',
+    'trace'         : 'some_trace_uuid',
+    'session'       : 'some_session_uuid',
+    'user'          : 'some_user_uuid',
+    'chapter'       : 'some_chapter_uuid',
+    'trigger'       : 'get http://some_trigger_route.com/dashboard',
+    'nonexist'      : 'this_should_not_exist',
+    'data'          : 'InsiU2FtcGxlIjoiVGhpcyBpcyB0ZXN0In0i',
+    'time_sent'     : 1,
 }
 HEADERS = {
-    "user-id"       : "some_user_uuid",
-    "session-id"    : "some_session_uuid",
-    "chapter-id"    : "some_chapter_uuid",
+    'user-id'       : 'some_user_uuid',
+    'session-id'    : 'some_session_uuid',
+    'chapter-id'    : 'some_chapter_uuid',
 }
-
 
 CLUSTER = Cluster([CONFIG['cluster']], port=9042)
 KEYSPACE = 'retrospect'
@@ -46,31 +45,31 @@ def setup_insert_sample_span():
     SESSION.execute(INSERT_QUERY.format(
         table='spans',
         payload=json.dumps({
-            'span_id': IDS['span'],
-            'trace_id': IDS['trace'],
-            'session_id': IDS['session'],
-            'user_id': IDS['user'],
-            'chapter_id': IDS['chapter'],
-            'trigger_route': IDS['trigger'],
-            'time_sent': 1,
+            'session_id'    : IDS['session'],
+            'chapter_id'    : IDS['chapter'],
+            'trigger_route' : IDS['trigger'],
+            'trace_id'      : IDS['trace'],
+            'span_id'       : IDS['span'],
+            'user_id'       : IDS['user'],
+            'time_sent'     : 1,
             })
     ))
 def setup_insert_sample_trace():
     SESSION.execute(INSERT_QUERY.format(
         table='events',
         payload=json.dumps({
-            'session_id': IDS['session'],
-            'user_id': IDS['user'],
-            'chapter_id': IDS['chapter'],
-            'data': IDS['data'],
+            'session_id'    : IDS['session'],
+            'chapter_id'    : IDS['chapter'],
+            'user_id'       : IDS['user'],
+            'data'          : IDS['data'],
             })
     ))
 def setup_insert_sample_snapshot():
     SESSION.execute(INSERT_QUERY.format(
         table='snapshots',
         payload=json.dumps({
-            'session_id': IDS['session'],
-            'data': IDS['data'],
+            'session_id'    : IDS['session'],
+            'data'          : IDS['data'],
             })
     ))
 
@@ -84,7 +83,6 @@ def teardown_delete_sample_trace():
 
 def teardown_delete_sample_snapshot():
     SESSION.execute(f"DELETE FROM snapshots WHERE data='{IDS['data']}';")
-
 
 # Assertions:
 
