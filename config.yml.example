@@ -1,0 +1,8 @@
+debug: false
+
+cluster: "localhost"
+
+port: "8081"
+use_https: false
+fullcert: "/path/to/full-cert.crt"
+privatekey: "/path/to/private-key.key"
