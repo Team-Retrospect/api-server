@@ -1,0 +1,348 @@
+swagger: "2.0"
+info:
+  description: "todo"
+  version: "0.9.0"
+  title: "Retrospect API"
+  contact:
+    email: "teamtextrix@gmail.com"
+  license:
+    name: "todo"
+    url: "todo"
+host: ""
+basepath: "/"
+tags:
+- name: "span"
+  description: "Back-end tracing data"
+- name: "trace"
+  description: "Front-end tracing data"
+- name: "chapter"
+  description: "A collection of front-end events"
+- name: "trigger"
+  description: "A URL route that creates a sequence of traces"
+schemes:
+- "https"
+
+paths:
+  /spans:
+    get:
+      tags:
+      - "span"
+      summary: "Get all spans in the db"
+      description: ""
+      operationId: "getSpans"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "List of spans"
+          schema:
+            type: "array"
+            items: "#/definitions/Span"
+    post:
+      tags:
+      - "span"
+      summary: "Post a span to the db"
+      description: ""
+      operationId: "postSpan"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Span data to log"
+        required: true
+        schema:
+          $ref: "#/definitions/Span"
+  /spans_by_trace/{id}:
+    get:
+      tags:
+      - "span"
+      summary: "Get all back-end spans relating to a front-end trace event"
+      description: ""
+      operationId: "getSpansByTraceID"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "query"
+        description: "Trace id to query by"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "returns data"
+          schema:
+            type: "array"
+            items: "#/definitions/Span"
+  /spans_by_chapter/{id}:
+    get:
+      tags:
+      - "span"
+      summary: "Get all back-end spans relating to a chapter of events"
+      description: ""
+      operationId: "getSpansByChapterID"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "query"
+        description: "Chapter id to query by"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "returns data"
+          schema:
+            type: "array"
+            items: "#/definitions/Span"
+  /span_search:
+    get:
+      tags:
+      - "span"
+      summary: "Search the db for content within any of the relevant fields"
+      description: ""
+      operationId: "searchSpans"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "trace_id"
+        in: "query"
+        description: "Trace id"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "chapter_id"
+        in: "query"
+        description: "Chaper id"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "user_id"
+        in: "query"
+        description: "User id"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "session_id"
+        in: "query"
+        description: "Session id"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "status_code"
+        in: "query"
+        description: "HTTP Status Code"
+        required: false
+        type: "integer"
+        format: "int16"
+      responses:
+        "200":
+          description: "returns data"
+          schema:
+            type: "array"
+            items: "#/definitions/Span"
+
+  /events:
+    get:
+      tags:
+      - "event"
+      summary: "Get all events in the db"
+      description: ""
+      operationId: "getEvents"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "List of events"
+          schema:
+            type: "array"
+            items: "#/definitions/Event"
+    post:
+      tags:
+      - "event"
+      summary: "Post a event to the db"
+      description: ""
+      operationId: "postEvent"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Event data to log"
+        required: true
+        schema:
+          $ref: "#/definitions/Event"
+  /event_search:
+    get:
+      tags:
+      - "event"
+      summary: "Search the db for content within any of the relevant fields"
+      description: ""
+      operationId: "searchEvents"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "returns data"
+          schema:
+            type: "array"
+            items: "#/definitions/Event"
+      parameters:
+      - name: "chapter_id"
+        in: "query"
+        description: "Chaper id"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "user_id"
+        in: "query"
+        description: "User id"
+        required: false
+        type: "string"
+        format: "uuid"
+      - name: "session_id"
+        in: "query"
+        description: "Session id"
+        required: false
+        type: "string"
+        format: "uuid"
+  /events_by_chapter/{id}:
+    get:
+      tags:
+      - "event"
+      summary: "Get all front-end events relating to a chapter id"
+      description: ""
+      operationId: "getEventsByChapterID"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "query"
+        description: "Chapter id to query by"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "returns data"
+          schema:
+            type: "array"
+            items: "#/definitions/Event"
+
+  /trigger_routes:
+    get:
+      tags:
+      - "trigger"
+      summary: "Get all events in the db"
+      description: ""
+      operationId: "getEvents"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      responses:
+        "200":
+          description: "List of events"
+          schema:
+            type: "array"
+            items: "#/definitions/Trigger"
+  /trace_ids_by_trigger:
+    post:
+      tags:
+      - "trigger"
+      summary: "Get all events in the db"
+      description: ""
+      operationId: "getEvents"
+      consumes:
+        - "text/plain"
+      produces:
+        - "application/json"
+      parameters:
+      - name: "id"
+        in: "body"
+        description: "Trigger route URL to search for"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "List of trace IDs"
+          schema:
+            type: "array"
+            items: "string"
+
+
+  # /chapter_ids_by_session/{id}:
+  #   "todo"
+  # /chapter_ids_by_trigger/{id}:
+  #   "todo"
+
+definitions:
+  Span:
+    type: "object"
+    required:
+      - "span_id"
+    properties:
+      span_id:
+        type: "string"
+      trace_id:
+        type: "string"
+      time_sent:
+        type: "integer"
+      duration:
+        type: "string"
+      data:
+        type: "string"
+      trigger_route:
+        type: "string"
+      user_id:
+        type: "string"
+      session_id:
+        type: "string"
+      chapter_id:
+        type: "string"
+      status_code:
+        type: "integer"
+        format: "int16"
+        example: "200"
+      request_data:
+        type: "string"
+  Event:
+    type: "object"
+    required:
+      - "data"
+    properties:
+      user_id:
+        type: "string"
+      session_id:
+        type: "string"
+      chapter_id:
+        type: "string"
+      data:
+        type: "string"
+
+  Trigger:
+    type: "object"
+    required:
+      - "trigger_route"
+    properties:
+      user_id:
+        type: "trigger_route"
+      data:
+        type: "string"
