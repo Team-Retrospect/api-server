@@ -11,7 +11,7 @@ First, install the dependencies:
 - Build the app with `go build`
 - Run it with `./cassandra-connector`
 
-Note that the Cassandra instance must be preconfigured. This app does not initialize it, but the schema is available in [[data.cql]].
+Note that the Cassandra instance must be preconfigured. This app does not initialize it, but the schema is available in [data.cql](./data.cql)
 
 ## Usage
 
@@ -28,14 +28,14 @@ apt update
 apt install python3
 ```
 
-```python
+```sh
 pip3 install pytest pyyaml requests
 ```
 
 Run the tests from the root folder with `./tests.sh`
 
 ```sh
->$ ./tests.sh
+$ ./tests.sh
 ============================= test session starts ==============================
 platform darwin -- Python 3.9.5, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
 rootdir: /Users/nicole/Capstone/Retrospect/api-server
