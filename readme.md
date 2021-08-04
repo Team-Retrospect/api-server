@@ -2,7 +2,15 @@
 
 A high-powered API server that exposes the Cassandra data in a controlled manner.
 
-## Installation
+## Installation with docker-compose.yml file
+
+Download the [docker-compose.yml](https://github.com/Team-Retrospect/docker-files) file
+
+```sh
+docker-compose up
+```
+
+## Manual Installation
 
 First, install the dependencies:
 - [Make sure Go is installed](https://www.digitalocean.com/community/tutorials/how-to-install-go-on-debian-10)
