@@ -4,7 +4,7 @@ A high-powered API server that exposes the Cassandra data in a controlled manner
 
 ## Installation with docker-compose.yml file
 
-Download the [docker-compose.yml](https://github.com/Team-Retrospect/docker-files) file
+Download the [docker-compose.yml](https://github.com/Team-Retrospect/deploy) file
 
 ```sh
 docker-compose up
