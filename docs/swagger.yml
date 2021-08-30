@@ -4,7 +4,7 @@ info:
   version: "0.9.0"
   title: "Retrospect API"
   contact:
-    email: "teamtextrix@gmail.com"
+    email: "textrix.retrospect@gmail.com"
   license:
     name: "todo"
     url: "todo"
@@ -286,12 +286,6 @@ paths:
           schema:
             type: "array"
             items: "string"
-
-
-  # /chapter_ids_by_session/{id}:
-  #   "todo"
-  # /chapter_ids_by_trigger/{id}:
-  #   "todo"
 
 definitions:
   Span:

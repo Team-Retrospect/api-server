@@ -1,4 +1,4 @@
-module github.com/Team-Textrix/cassandra-connector
+module github.com/Team-Retrospect/api-server
 
 go 1.16
 
